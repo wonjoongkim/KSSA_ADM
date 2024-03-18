@@ -1,0 +1,22 @@
+:where(.css-dev-only-do-not-override-190m0jy).ant-select-single .ant-select-selector .ant-select-selection-item,
+:where(.css-dev-only-do-not-override-190m0jy).ant-select-single .ant-select-selector .ant-select-selection-placeholder {
+    line-height: 55px;
+    font-size: 15px;
+}
+
+:where(.css-dev-only-do-not-override-190m0jy)[class*=' ant-select'] [class*=' ant-select'] {
+    padding-top: 5px;
+}
+
+:where(.css-dev-only-do-not-override-190m0jy).ant-select-single .ant-select-selector .ant-select-selection-search {
+    top: 11px;
+}
+
+:where(.css-dev-only-do-not-override-190m0jy)[class^='ant-input-number'] [class^='ant-input-number'],
+:where(.css-dev-only-do-not-override-190m0jy)[class*=' ant-input-number'] [class^='ant-input-number'],
+:where(.css-dev-only-do-not-override-190m0jy)[class^='ant-input-number'] [class*=' ant-input-number'],
+:where(.css-dev-only-do-not-override-190m0jy)[class*=' ant-input-number'] [class*=' ant-input-number'] {
+    box-sizing: border-box;
+    height: 55px;
+    font-size: 15px;
+}

@@ -1,0 +1,18 @@
+.ant-input-search :where(.css-dev-only-do-not-override-190m0jy).ant-input-group .ant-input-affix-wrapper:not(:last-child) {
+    border-start-start-radius: 6px;
+    border-end-start-radius: 6px;
+    height: 45px;
+}
+
+:where(.css-dev-only-do-not-override-190m0jy).ant-input-search
+    > .ant-input-group
+    > .ant-input-group-addon:last-child
+    .ant-input-search-button {
+    height: 45px;
+}
+
+:where(.css-dev-only-do-not-override-190m0jy).ant-checkbox .ant-checkbox-inner {
+    border: 1px solid #94c7fa;
+    width: 20px;
+    height: 20px;
+}
