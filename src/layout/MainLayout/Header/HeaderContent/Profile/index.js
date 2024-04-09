@@ -2,7 +2,7 @@
 import PropTypes from 'prop-types';
 import { useRef, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useGetLoginInfoMutation } from '../../../../../hooks/api/MainManagement/MainManagement';
+import { useGetAdminInfoMutation } from '../../../../../hooks/api/MainManagement/MainManagement';
 import { remove } from '../../../../../services/core/User/Token';
 
 // material-ui
@@ -68,7 +68,7 @@ const Profile = () => {
     const theme = useTheme();
     const navigate = useNavigate();
     const iconBackColorOpen = 'grey.300';
-    const [getLoginInfo] = useGetLoginInfoMutation();
+    const [getLoginInfo] = useGetAdminInfoMutation();
 
     // 모달창 세팅
     const [Modal_Out, setModal_Out] = useState(false);
@@ -122,7 +122,7 @@ const Profile = () => {
     };
 
     useEffect(() => {
-        // handleLoginInfo();
+        handleLoginInfo();
     }, []);
 
     return (
@@ -145,7 +145,7 @@ const Profile = () => {
                         <Stack direction="row" spacing={2} alignItems="center" sx={{ p: 0.5 }}>
                             {/* <Avatar alt="profile user" src={avatar4} sx={{ width: 32, height: 32 }} /> */}
                             <Avatar style={{ backgroundColor: '#87d068' }} icon={<UserOutlined />} />
-                            <Typography variant="subtitle1">{loginInfo.userNm}</Typography>
+                            <Typography variant="subtitle1">{loginInfo.Adm_Name}</Typography>
                         </Stack>
                     </ButtonBase>
 
@@ -189,9 +189,9 @@ const Profile = () => {
                                                             <Stack direction="row" spacing={1.25} alignItems="center">
                                                                 <Avatar style={{ backgroundColor: '#87d068' }} icon={<UserOutlined />} />
                                                                 <Stack>
-                                                                    <Typography variant="h6">{loginInfo.userNm}</Typography>
+                                                                    <Typography variant="h6">{loginInfo.Adm_Name}</Typography>
                                                                     <Typography variant="body2" color="textSecondary">
-                                                                        {loginInfo.userId}
+                                                                        {loginInfo.Adm_Id}
                                                                     </Typography>
                                                                 </Stack>
                                                             </Stack>

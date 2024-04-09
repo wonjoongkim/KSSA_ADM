@@ -17,13 +17,6 @@ export const fileManagement = createApi({
         }
     }),
     endpoints: (builder) => ({
-        // attachDetailList: builder.mutation({
-        //     query: (atchFileId) => ({
-        //         url: `adm/file/attachDetailList/${atchFileId}`,
-        //         method: 'GET',
-        //         contentType: 'multipart/form-data'
-        //     })
-        // }),
         FileDelete: builder.mutation({
             query: (body) => ({
                 url: 'FileDelete',
@@ -46,43 +39,12 @@ export const fileManagement = createApi({
                 body: body,
                 contentType: 'multipart/form-data'
             })
-        }),
-        getImg: builder.mutation({
-            query: (imagePath) => ({
-                url: `adm/file/getImg?imgPath=${imagePath}`,
-                method: 'GET'
-            })
-        }),
-        getFileInfo: builder.mutation({
-            query: ({ atchFileId, fileSn }) => ({
-                url: `file/getFileInfo?atchFileId=${atchFileId}&fileSn=${fileSn}`,
-                method: 'GET'
-            })
-        }),
-        updateDocumentFileId: builder.mutation({
-            query: (body) => ({
-                url: 'main/updateDocumentFileId',
-                method: 'POST',
-                body: body
-            })
-        }),
-        getSafetyFileId: builder.mutation({
-            query: (body) => ({
-                url: 'main/getSafetyFileId',
-                method: 'POST',
-                body: body
-            })
         })
     })
 });
 
 export const {
-    useUpdateDocumentFileIdMutation,
-    useAttachDetailListMutation,
     useFileDeleteMutation,
     // useFileDownMutation,
-    useFileUploadMutation,
-    useGetImgMutation,
-    useGetFileInfoMutation,
-    useGetSafetyFileIdMutation
+    useFileUploadMutation
 } = fileManagement;

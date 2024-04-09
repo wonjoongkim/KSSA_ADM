@@ -8,7 +8,7 @@ dayjs.extend(customParseFormat);
 export const Calender_Info = (props) => {
     const dateFormat = 'YYYY-MM-DD';
     const { RangePicker } = DatePicker;
-    const [eventsContainer, setEventsContainer] = useState([]); // 이벤트 클릭 정보
+    const [viewContainer, setViewContainer] = useState([]); // 이벤트 클릭 정보
 
     const EventClickModal_Close = () => {
         props.eventClickModalClose();
@@ -19,135 +19,200 @@ export const Calender_Info = (props) => {
     };
 
     useEffect(() => {
-        setEventsContainer(props.eventsContainer);
-    }, [props.eventsContainer]);
+        setViewContainer(props.eventsViewContainer);
+    }, [props.eventsViewContainer]);
 
     return (
         <>
             <Card
                 size="small"
                 style={{
-                    backgroundColor: eventsContainer.EduColor,
+                    backgroundColor: viewContainer.EduColor,
                     color: '#FFFFFF',
+                    fontWeight: '600',
                     border: '0px',
-                    marginBottom: '12px',
+                    fontSize: '18px',
+                    marginBottom: '25px',
                     borderRadius: '12px'
                 }}
             >
-                {eventsContainer.EduStated === 'Ing' ? (
-                    <span style={{ fontSize: '16px', fontWeight: '600' }}>교육 모집중</span>
-                ) : (
-                    <span style={{ fontSize: '16px', fontWeight: '600' }}>교육종료</span>
-                )}
+                {viewContainer.EduStated === 'Ing' ? '교육 모집중' : '교육종료'}
             </Card>
-            <Row gutter={[8, 12]}>
+            <Row gutter={[8, 8]}>
                 <Col span={8}>
                     <Card
                         size="small"
                         style={{
-                            backgroundColor: eventsContainer.EduColor,
-                            color: '#FFFFFF',
-                            borderRadius: '10px',
-                            textAlign: 'center'
-                        }}
-                    >
-                        <span style={{ fontSize: '15px' }}>교육 과정</span>
-                    </Card>
-                </Col>
-                <Col span={16}>
-                    <Input defaultValue={eventsContainer.Title} style={{ height: '45px' }} />
-                </Col>
-                <Col span={8}>
-                    <Card
-                        size="small"
-                        style={{
-                            backgroundColor: eventsContainer.EduColor,
-                            color: '#FFFFFF',
-                            borderRadius: '10px',
-                            textAlign: 'center'
-                        }}
-                    >
-                        <span style={{ fontSize: '15px' }}>교육 구분</span>
-                    </Card>
-                </Col>
-                <Col span={16}>
-                    <Input defaultValue={eventsContainer.EduProc} style={{ height: '45px' }} />
-                </Col>
-                <Col span={8}>
-                    <Card
-                        size="small"
-                        style={{
-                            backgroundColor: eventsContainer.EduColor,
+                            backgroundColor: viewContainer.EduColor,
                             color: '#FFFFFF',
                             fontSize: '15px',
-                            borderRadius: '10px',
-                            textAlign: 'center'
+                            borderRadius: '50px',
+                            fontWeight: '550'
                         }}
                     >
-                        <span style={{ fontSize: '15px' }}>교육 차수</span>
+                        교육 과정
                     </Card>
                 </Col>
                 <Col span={16}>
-                    <Input suffix="차수" defaultValue={eventsContainer.EduBaseline} style={{ height: '45px' }} />
+                    <Card
+                        size="small"
+                        style={{
+                            backgroundColor: '#f0f0f0',
+                            fontSize: '15px'
+                        }}
+                    >
+                        {viewContainer.title}
+                    </Card>
                 </Col>
                 <Col span={8}>
                     <Card
                         size="small"
                         style={{
-                            backgroundColor: eventsContainer.EduColor,
+                            backgroundColor: viewContainer.EduColor,
                             color: '#FFFFFF',
                             fontSize: '15px',
-                            borderRadius: '10px',
-                            textAlign: 'center'
+                            borderRadius: '50px',
+                            fontWeight: '550'
                         }}
                     >
-                        <span style={{ fontSize: '15px' }}>교육일</span>
+                        교육 구분
                     </Card>
                 </Col>
                 <Col span={16}>
-                    <RangePicker
-                        size="large"
-                        defaultValue={[dayjs(eventsContainer.StartDate, dateFormat), dayjs(eventsContainer.EndDate, dateFormat)]}
-                        allowEmpty={[true, true]}
-                        onChange={(date, dateString) => {
-                            console.log(date, dateString);
+                    <Card
+                        size="small"
+                        style={{
+                            backgroundColor: '#f0f0f0',
+                            fontSize: '15px'
                         }}
-                        style={{ width: '100%', height: '45px' }}
-                    />
+                    >
+                        {viewContainer.EduProc}
+                    </Card>
                 </Col>
                 <Col span={8}>
                     <Card
                         size="small"
                         style={{
-                            backgroundColor: eventsContainer.EduColor,
+                            backgroundColor: viewContainer.EduColor,
                             color: '#FFFFFF',
                             fontSize: '15px',
-                            borderRadius: '10px',
-                            textAlign: 'center'
+                            borderRadius: '50px',
+                            fontWeight: '550'
                         }}
                     >
-                        <span style={{ fontSize: '15px' }}>교육인원</span>
+                        교육 차수
                     </Card>
                 </Col>
                 <Col span={16}>
-                    <Input suffix="명" defaultValue={eventsContainer.EduPeople} style={{ height: '45px' }} />
+                    <Card
+                        size="small"
+                        style={{
+                            backgroundColor: '#f0f0f0',
+                            fontSize: '15px'
+                        }}
+                    >
+                        {viewContainer.EduBaseline}차수
+                    </Card>
                 </Col>
                 <Col span={8}>
                     <Card
                         size="small"
                         style={{
-                            backgroundColor: eventsContainer.EduColor,
+                            backgroundColor: viewContainer.EduColor,
                             color: '#FFFFFF',
                             fontSize: '15px',
-                            borderRadius: '10px',
-                            textAlign: 'center'
+                            borderRadius: '50px',
+                            fontWeight: '550'
                         }}
                     >
-                        <span style={{ fontSize: '15px' }}>입교인원</span>
+                        교육 시작일
                     </Card>
                 </Col>
                 <Col span={16}>
-                    <Input suffix="명" defaultValue={eventsContainer.EduComplete} style={{ height: '45px' }} />
+                    <Card
+                        size="small"
+                        style={{
+                            backgroundColor: '#f0f0f0',
+                            fontSize: '15px'
+                        }}
+                    >
+                        {viewContainer.start}
+                    </Card>
+                </Col>
+                <Col span={8}>
+                    <Card
+                        size="small"
+                        style={{
+                            backgroundColor: viewContainer.EduColor,
+                            color: '#FFFFFF',
+                            fontSize: '15px',
+                            borderRadius: '50px',
+                            fontWeight: '550'
+                        }}
+                    >
+                        교육 종료일
+                    </Card>
+                </Col>
+                <Col span={16}>
+                    <Card
+                        size="small"
+                        style={{
+                            backgroundColor: '#f0f0f0',
+                            fontSize: '15px'
+                        }}
+                    >
+                        {viewContainer.end}
+                    </Card>
+                </Col>
+                <Col span={8}>
+                    <Card
+                        size="small"
+                        style={{
+                            backgroundColor: viewContainer.EduColor,
+                            color: '#FFFFFF',
+                            fontSize: '15px',
+                            borderRadius: '50px',
+                            fontWeight: '550'
+                        }}
+                    >
+                        교육 인원
+                    </Card>
+                </Col>
+                <Col span={16}>
+                    <Card
+                        size="small"
+                        style={{
+                            backgroundColor: '#f0f0f0',
+                            fontSize: '15px'
+                        }}
+                    >
+                        {viewContainer.EduPeople}명
+                    </Card>
+                </Col>
+                <Col span={8}>
+                    <Card
+                        size="small"
+                        style={{
+                            backgroundColor: viewContainer.EduColor,
+                            color: '#FFFFFF',
+                            fontSize: '15px',
+                            borderRadius: '50px',
+                            fontWeight: '550'
+                        }}
+                    >
+                        교육 이수
+                    </Card>
+                </Col>
+                <Col span={16}>
+                    <Card
+                        size="small"
+                        style={{
+                            backgroundColor: '#f0f0f0',
+                            fontSize: '15px'
+                        }}
+                    >
+                        {viewContainer.EduComplete}명
+                    </Card>
                 </Col>
             </Row>
             <Divider />

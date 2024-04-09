@@ -8,7 +8,7 @@ dayjs.extend(customParseFormat);
 export const Calender_Add = (props) => {
     const dateFormat = 'YYYY-MM-DD';
     const { RangePicker } = DatePicker;
-    const [eventsContainer, setEventsContainer] = useState(props.eventsContainer); // 이벤트 클릭 정보
+    const [addContainer, setAddContainer] = useState([]); // 이벤트 클릭 정보
 
     const EventClickModal_Close = () => {
         props.eventClickModalClose();
@@ -19,22 +19,22 @@ export const Calender_Add = (props) => {
     };
 
     useEffect(() => {
-        setEventsContainer(props.eventsContainer);
-    }, [props.eventsContainer]);
+        setAddContainer(props.eventsAddContainer);
+    }, [props.eventsAddContainer]);
 
     return (
         <>
             <Card
                 size="small"
                 style={{
-                    backgroundColor: eventsContainer.EduColor,
+                    backgroundColor: addContainer.EduColor,
                     color: '#FFFFFF',
                     border: '0px',
                     marginBottom: '12px',
                     borderRadius: '12px'
                 }}
             >
-                {eventsContainer.EduStated === 'Ing' ? (
+                {addContainer.EduStated === 'Ing' ? (
                     <span style={{ fontSize: '16px', fontWeight: '600' }}>교육 모집중</span>
                 ) : (
                     <span style={{ fontSize: '16px', fontWeight: '600' }}>교육종료</span>
@@ -45,7 +45,7 @@ export const Calender_Add = (props) => {
                     <Card
                         size="small"
                         style={{
-                            backgroundColor: eventsContainer.EduColor,
+                            backgroundColor: addContainer.EduColor,
                             color: '#FFFFFF',
                             borderRadius: '10px',
                             textAlign: 'center'
@@ -55,13 +55,13 @@ export const Calender_Add = (props) => {
                     </Card>
                 </Col>
                 <Col span={16}>
-                    <Input defaultValue={eventsContainer.Title} style={{ height: '45px' }} />
+                    <Input defaultValue={addContainer.Title} style={{ height: '45px' }} />
                 </Col>
                 <Col span={8}>
                     <Card
                         size="small"
                         style={{
-                            backgroundColor: eventsContainer.EduColor,
+                            backgroundColor: addContainer.EduColor,
                             color: '#FFFFFF',
                             borderRadius: '10px',
                             textAlign: 'center'
@@ -71,13 +71,13 @@ export const Calender_Add = (props) => {
                     </Card>
                 </Col>
                 <Col span={16}>
-                    <Input defaultValue={eventsContainer.EduProc} style={{ height: '45px' }} />
+                    <Input defaultValue={addContainer.EduProc} style={{ height: '45px' }} />
                 </Col>
                 <Col span={8}>
                     <Card
                         size="small"
                         style={{
-                            backgroundColor: eventsContainer.EduColor,
+                            backgroundColor: addContainer.EduColor,
                             color: '#FFFFFF',
                             fontSize: '15px',
                             borderRadius: '10px',
@@ -88,13 +88,13 @@ export const Calender_Add = (props) => {
                     </Card>
                 </Col>
                 <Col span={16}>
-                    <Input suffix="차수" defaultValue={eventsContainer.EduBaseline} style={{ height: '45px' }} />
+                    <Input suffix="차수" defaultValue={addContainer.EduBaseline} style={{ height: '45px' }} />
                 </Col>
                 <Col span={8}>
                     <Card
                         size="small"
                         style={{
-                            backgroundColor: eventsContainer.EduColor,
+                            backgroundColor: addContainer.EduColor,
                             color: '#FFFFFF',
                             fontSize: '15px',
                             borderRadius: '10px',
@@ -107,7 +107,7 @@ export const Calender_Add = (props) => {
                 <Col span={16}>
                     <RangePicker
                         size="large"
-                        defaultValue={[dayjs(eventsContainer.StartDate, dateFormat), dayjs(eventsContainer.EndDate, dateFormat)]}
+                        value={[dayjs(addContainer.StartDate), dayjs(addContainer.EndDate)]}
                         allowEmpty={[true, true]}
                         onChange={(date, dateString) => {
                             console.log(date, dateString);
@@ -119,7 +119,7 @@ export const Calender_Add = (props) => {
                     <Card
                         size="small"
                         style={{
-                            backgroundColor: eventsContainer.EduColor,
+                            backgroundColor: addContainer.EduColor,
                             color: '#FFFFFF',
                             fontSize: '15px',
                             borderRadius: '10px',
@@ -130,13 +130,13 @@ export const Calender_Add = (props) => {
                     </Card>
                 </Col>
                 <Col span={16}>
-                    <Input suffix="명" defaultValue={eventsContainer.EduPeople} style={{ height: '45px' }} />
+                    <Input suffix="명" defaultValue={addContainer.EduPeople} style={{ height: '45px' }} />
                 </Col>
                 <Col span={8}>
                     <Card
                         size="small"
                         style={{
-                            backgroundColor: eventsContainer.EduColor,
+                            backgroundColor: addContainer.EduColor,
                             color: '#FFFFFF',
                             fontSize: '15px',
                             borderRadius: '10px',
@@ -147,7 +147,7 @@ export const Calender_Add = (props) => {
                     </Card>
                 </Col>
                 <Col span={16}>
-                    <Input suffix="명" defaultValue={eventsContainer.EduComplete} style={{ height: '45px' }} />
+                    <Input suffix="명" defaultValue={addContainer.EduComplete} style={{ height: '45px' }} />
                 </Col>
             </Row>
             <Divider />

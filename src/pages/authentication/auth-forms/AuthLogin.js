@@ -31,7 +31,7 @@ import { EyeOutlined, EyeInvisibleOutlined, PoweroffOutlined } from '@ant-design
 
 // 토큰
 import { useUserToken } from '../../../hooks/core/UserToken';
-import { useLoginMutation } from '../../../hooks/api/LoginManagement/LoginManagement';
+import { useAdminLoginMutation } from '../../../hooks/api/LoginManagement/LoginManagement';
 // ============================|| FIREBASE - LOGIN ||============================ //
 
 const AuthLogin = () => {
@@ -48,7 +48,7 @@ const AuthLogin = () => {
     const [userToken] = useUserToken();
 
     // 로그인 api 정보
-    const [login] = useLoginMutation();
+    const [AdminLogin] = useAdminLoginMutation();
 
     const handleClickShowPassword = () => {
         setShowPassword(!showPassword);
@@ -67,39 +67,33 @@ const AuthLogin = () => {
         setSaveIDFlag(!saveIDFlag);
     };
 
-    const handleLogin = () => {
-        localStorage.setItem('LoginId', 'admin');
-        setTimeout(() => {
-            navigate('/');
-        }, 500);
+    const handleLogin = async (values) => {
+        const userLoginResponse = await AdminLogin({
+            admid: values.Adminid,
+            admpw: values.Password
+        });
+
+        if (userLoginResponse.data.RET_CODE === '0000') {
+            const jwtToken = userLoginResponse.data.RET_DATA.accessToken;
+            userToken.setItem(jwtToken);
+            localStorage.setItem('LoginId', values.Adminid);
+
+            if (true) {
+                if (saveIDFlag) localStorage.setItem(LS_KEY_ID, values.Adminid);
+            }
+
+            messageApi.open({
+                type: 'success',
+                content: values.Adminid + '님 로그인 했습니다.'
+            });
+
+            setTimeout(() => {
+                navigate('/');
+            }, 500);
+        } else {
+            Modal.error({ title: 'Error', content: '로그인에 실패하였습니다.' });
+        }
     };
-    // const handleLogin = async (values) => {
-    // const userLoginResponse = await login({
-    //     loginId: values.Adminid,
-    //     loginPw: values.Password
-    // });
-
-    // if (userLoginResponse.data.RET_CODE === '0000') {
-    //     const jwtToken = userLoginResponse.data.RET_DATA.accessToken;
-    //     userToken.setItem(jwtToken);
-    //     localStorage.setItem('LoginId', values.Adminid);
-
-    //     if (true) {
-    //         if (saveIDFlag) localStorage.setItem(LS_KEY_ID, values.Adminid);
-    //     }
-
-    //     messageApi.open({
-    //         type: 'success',
-    //         content: values.Adminid + '님 로그인 했습니다.'
-    //     });
-
-    //     setTimeout(() => {
-    //         navigate('/');
-    //     }, 500);
-    // } else {
-    //     Modal.error({ title: 'Error', content: '로그인에 실패하였습니다.' });
-    // }
-    // };
 
     useEffect(() => {
         let idFlag = JSON.parse(localStorage.getItem(LS_KEY_SAVE_ID_FLAG));

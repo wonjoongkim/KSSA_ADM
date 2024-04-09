@@ -9,9 +9,9 @@ export const loginManagement = createApi({
     }),
     endpoints: (builder) => ({
         //로그인
-        login: builder.mutation({
+        AdminLogin: builder.mutation({
             query: (body) => ({
-                url: 'adm/login.do',
+                url: 'Adm/Admin_Login',
                 method: 'POST',
                 body: body
             })
@@ -43,4 +43,4 @@ export const loginManagement = createApi({
     })
 });
 
-export const { useLoginMutation, usePasswordConfirmMutation, usePasswordResetMutation, useGetPwdInfoMutation } = loginManagement;
+export const { useAdminLoginMutation, usePasswordConfirmMutation, usePasswordResetMutation, useGetPwdInfoMutation } = loginManagement;

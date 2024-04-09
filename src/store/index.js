@@ -13,6 +13,9 @@ import { teacherManagement } from '../hooks/api/TeacherManagement/TeacherManagem
 import { theoryGroupManagement } from '../hooks/api/TheoryGroupManagement/TheoryGroupManagement';
 import { statisticsManagement } from '../hooks/api/StatisticsManagement/StatisticsManagement';
 import { fileManagement } from '../hooks/api/FileManagement/FileManagement';
+
+import { calenderManagement } from '../hooks/api/CalenderManagement/CalenderManagement';
+
 // ==============================|| REDUX TOOLKIT - MAIN STORE ||============================== //
 
 export const store = configureStore({
@@ -28,7 +31,9 @@ export const store = configureStore({
         [teacherManagement.reducerPath]: teacherManagement.reducer,
         [theoryGroupManagement.reducerPath]: theoryGroupManagement.reducer,
         [statisticsManagement.reducerPath]: statisticsManagement.reducer,
-        [fileManagement.reducerPath]: fileManagement.reducer
+        [fileManagement.reducerPath]: fileManagement.reducer,
+
+        [calenderManagement.reducerPath]: calenderManagement.reducer
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware()
@@ -44,6 +49,8 @@ export const store = configureStore({
             .concat(theoryGroupManagement.middleware)
             .concat(statisticsManagement.middleware)
             .concat(fileManagement.middleware)
+
+            .concat(calenderManagement.middleware)
 });
 
 setupListeners(store.dispatch);

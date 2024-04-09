@@ -15,10 +15,10 @@ export const mainManagement = createApi({
         }
     }),
     endpoints: (builder) => ({
-        // 로그인 정보
-        getLoginInfo: builder.mutation({
+        // 관리자 정보
+        getAdminInfo: builder.mutation({
             query: (body) => ({
-                url: 'adm/getLoginInfo.do',
+                url: 'Adm/Admin_Info',
                 method: 'POST',
                 body: body
             })
@@ -42,4 +42,4 @@ export const mainManagement = createApi({
     })
 });
 
-export const { useGetLoginInfoMutation, useSelectMainEduStatisticsMutation, useSelectMainYearStatisticsMutation } = mainManagement;
+export const { useGetAdminInfoMutation, useSelectMainEduStatisticsMutation, useSelectMainYearStatisticsMutation } = mainManagement;

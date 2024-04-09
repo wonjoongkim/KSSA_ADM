@@ -9,6 +9,10 @@ import { Card, Space, Row, Col, Modal, Button, Input, Divider, DatePicker } from
 
 import interactionPlugin, { Draggable } from '@fullcalendar/interaction'; // 이 부분을 수정
 
+// API Hooks Start
+import { useCalenderListMutation, useCalenderViewMutation } from '../../hooks/api/CalenderManagement/CalenderManagement';
+// API Hooks End
+
 import { Calender_Add } from './Calender_Add';
 import { Calender_Info } from './Calender_Info';
 import './Style.css';
@@ -20,11 +24,13 @@ const CalenderApp_Adm = () => {
     const { confirm } = Modal;
     const calendarRef = useRef(null);
     const [EventClickModal, setEventClickModal] = useState(false); // 이벤트 클릭 모달
+    const [eventsListContainer, setEventsListContainer] = useState([]); // 이벤트 리스트 정보
+    const [eventsViewContainer, setEventsViewContainer] = useState([]); // 이벤트 상세 정보
+    const [eventsAddContainer, setEventsAddContainer] = useState([]); // 이벤트 추가 정보
+
     const [eventClickModalAdd, setEventClickModalAdd] = useState(false); // 이벤트 추가 모달
     const [eventClickModalInfo, setEventClickModalInfo] = useState(false); // 이벤트 상세정보 모달
-    const [EventDeleteModal, setEventDeleteModal] = useState(false); // 이벤트 삭제 모달
-
-    const [eventsContainer, setEventsContainer] = useState(''); // 이벤트 클릭 정보
+    const [eventDeleteModal, setEventDeleteModal] = useState(false); // 이벤트 삭제 모달
 
     // 현재 일자를 가져오기 위해 Date 객체를 생성합니다.
     const currentDate = new Date();
@@ -41,7 +47,138 @@ const CalenderApp_Adm = () => {
     // 현재 일자를 yyyy-mm-dd 형식으로 표시합니다.
     const formattedDate = `${year}-${formattedMonth}-${formattedDay}`;
 
-    const Calender_Call = () => {
+    // ==================================================================================================
+    // 교육일정 정보 (Calender List)
+    const [CalenderList] = useCalenderListMutation();
+    const handelCalenderList = async () => {
+        const CalenderListResponse = await CalenderList({});
+        CalenderListResponse?.data?.RET_CODE === '0000'
+            ? setEventsListContainer(
+                  CalenderListResponse?.data?.RET_DATA.map((e) => ({
+                      id: e.Idx,
+                      title: e.Edu_Nm,
+                      start: e.Edu_Date_Start,
+                      end: e.Edu_Date_End,
+                      constraint: 'availableForMeeting',
+                      allDay: true,
+                      color:
+                          e.Edu_State === '0'
+                              ? e.Edu_Type === '1'
+                                  ? '#ed7d31'
+                                  : e.Edu_Type === '2'
+                                  ? '#cd5402'
+                                  : e.Edu_Type === '3'
+                                  ? '#a54504'
+                                  : e.Edu_Type === '4'
+                                  ? '#5b9bd5'
+                                  : e.Edu_Type === '5'
+                                  ? '#3085d3'
+                                  : e.Edu_Type === '6'
+                                  ? '#255d91'
+                                  : ''
+                              : '#aeaeae',
+                      EduColor:
+                          e.Edu_State === '0'
+                              ? e.Edu_Type === '1'
+                                  ? '#ed7d31'
+                                  : e.Edu_Type === '2'
+                                  ? '#cd5402'
+                                  : e.Edu_Type === '3'
+                                  ? '#a54504'
+                                  : e.Edu_Type === '4'
+                                  ? '#5b9bd5'
+                                  : e.Edu_Type === '5'
+                                  ? '#3085d3'
+                                  : e.Edu_Type === '6'
+                                  ? '#255d91'
+                                  : ''
+                              : '#aeaeae',
+                      EduStated: e.Edu_State === '0' ? 'Ing' : 'End',
+                      EduProc:
+                          e.Edu_Type === '1' || e.Edu_Type === '4'
+                              ? '초기'
+                              : e.Edu_Type === '2' || e.Edu_Type === '5'
+                              ? '정기'
+                              : e.Edu_Type === '3' || e.Edu_Type === '6'
+                              ? '인증'
+                              : '',
+                      EduBaseline: e.Base_Line,
+                      EduPeople: e.Edu_Personnel,
+                      EduComplete: e.Edu_Personnel
+                  }))
+              )
+            : '';
+    };
+
+    // ==================================================================================================
+    // 교육일정 상세 (Calender View)
+    const [CalenderView] = useCalenderViewMutation();
+    const handelCalenderView = async (idx) => {
+        const CalenderViewResponse = await CalenderView({
+            Idx: idx
+        });
+        CalenderViewResponse?.data?.RET_CODE === '0000'
+            ? setEventsViewContainer({
+                  id: CalenderViewResponse?.data?.RET_DATA[0].Idx,
+                  title: CalenderViewResponse?.data?.RET_DATA[0].Edu_Nm,
+                  start: CalenderViewResponse?.data?.RET_DATA[0].Edu_Date_Start.slice(0, 10),
+                  end: CalenderViewResponse?.data?.RET_DATA[0].Edu_Date_End.slice(0, 10),
+                  constraint: 'availableForMeeting',
+                  allDay: true,
+                  color:
+                      CalenderViewResponse?.data?.RET_DATA[0].Edu_State === '0'
+                          ? CalenderViewResponse?.data?.RET_DATA[0].Edu_Type === '1'
+                              ? '#ed7d31'
+                              : CalenderViewResponse?.data?.RET_DATA[0].Edu_Type === '2'
+                              ? '#cd5402'
+                              : CalenderViewResponse?.data?.RET_DATA[0].Edu_Type === '3'
+                              ? '#a54504'
+                              : CalenderViewResponse?.data?.RET_DATA[0].Edu_Type === '4'
+                              ? '#5b9bd5'
+                              : CalenderViewResponse?.data?.RET_DATA[0].Edu_Type === '5'
+                              ? '#3085d3'
+                              : CalenderViewResponse?.data?.RET_DATA[0].Edu_Type === '6'
+                              ? '#255d91'
+                              : ''
+                          : '#aeaeae',
+                  EduColor:
+                      CalenderViewResponse?.data?.RET_DATA[0].Edu_State === '0'
+                          ? CalenderViewResponse?.data?.RET_DATA[0].Edu_Type === '1'
+                              ? '#ed7d31'
+                              : CalenderViewResponse?.data?.RET_DATA[0].Edu_Type === '2'
+                              ? '#cd5402'
+                              : CalenderViewResponse?.data?.RET_DATA[0].Edu_Type === '3'
+                              ? '#a54504'
+                              : CalenderViewResponse?.data?.RET_DATA[0].Edu_Type === '4'
+                              ? '#5b9bd5'
+                              : CalenderViewResponse?.data?.RET_DATA[0].Edu_Type === '5'
+                              ? '#3085d3'
+                              : CalenderViewResponse?.data?.RET_DATA[0].Edu_Type === '6'
+                              ? '#255d91'
+                              : ''
+                          : '#aeaeae',
+                  EduStated: CalenderViewResponse?.data?.RET_DATA[0].Edu_State === '0' ? 'Ing' : 'End',
+                  EduProc:
+                      CalenderViewResponse?.data?.RET_DATA[0].Edu_Type === '1' || CalenderViewResponse?.data?.RET_DATA[0].Edu_Type === '4'
+                          ? '초기'
+                          : CalenderViewResponse?.data?.RET_DATA[0].Edu_Type === '2' ||
+                            CalenderViewResponse?.data?.RET_DATA[0].Edu_Type === '5'
+                          ? '정기'
+                          : CalenderViewResponse?.data?.RET_DATA[0].Edu_Type === '3' ||
+                            CalenderViewResponse?.data?.RET_DATA[0].Edu_Type === '6'
+                          ? '인증'
+                          : '',
+                  EduBaseline: CalenderViewResponse?.data?.RET_DATA[0].Base_Line,
+                  EduPeople: CalenderViewResponse?.data?.RET_DATA[0].Edu_Personnel,
+                  EduComplete: CalenderViewResponse?.data?.RET_DATA[0].Edu_Personnel
+              })
+            : '';
+    };
+    // API INTERFACE END
+    // ==================================================================================================
+    // ==================================================================================================
+
+    useEffect(() => {
         const calendarEl = calendarRef.current;
         const calendar = new Calendar(calendarEl, {
             plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin],
@@ -62,71 +199,7 @@ const CalenderApp_Adm = () => {
             dayMaxEvents: true,
             displayEventTime: false,
             themeSystem: 'Sandstone',
-            events: [
-                {
-                    id: '1',
-                    title: '항공경비 초기 [1차]',
-                    start: '2024-02-01 00:00:00',
-                    end: '2024-02-04 24:00:00',
-                    constraint: 'availableForMeeting',
-                    allDay: true,
-                    color: '#5B9BD5',
-                    EduColor: '#5B9BD5',
-                    EduStated: 'Ing',
-                    EduProc: '초기',
-                    EduBaseline: '1',
-                    EduPeople: '30',
-                    EduComplete: '30'
-                },
-                {
-                    id: '2',
-                    title: '항공경비 초기 [2차]',
-                    start: '2024-02-08 00:00:00',
-                    end: '2024-02-11 24:00:00',
-                    allDay: true,
-                    color: '#5B9BD5',
-                    EduStated: 'Ing',
-                    EduColor: '#5B9BD5',
-                    EduProc: '초기',
-                    EduBaseline: '2',
-                    EduPeople: '28',
-                    EduComplete: '25'
-                },
-                {
-                    id: '3',
-                    title: '항공경비 인증평가 [1차]',
-                    start: '2024-02-12 00:00:00',
-                    end: '2024-02-12 24:00:00',
-                    allDay: true,
-                    color: '#FFC000',
-                    EduStated: 'Ing',
-                    EduColor: '#FFC000',
-                    EduProc: '초기',
-                    EduBaseline: '1',
-                    EduPeople: '30',
-                    EduComplete: '29'
-                },
-                {
-                    id: '4',
-                    title: '항공경비 초기 [3차]',
-                    start: '2024-02-13 00:00:00',
-                    end: '2024-02-16 24:00:00',
-                    allDay: true,
-                    color: '#5B9BD5',
-                    EduStated: 'Ing',
-                    EduColor: '#5B9BD5',
-                    EduProc: '초기',
-                    EduBaseline: '3',
-                    EduPeople: '24',
-                    EduComplete: '24'
-                }
-                // {
-                //     groupId: 'availableForMeeting',
-                //     start: '2024-01-23T10:00:00',
-                //     end: '2024-01-23T16:00:00',
-                //     display: 'day'
-                // }
-            ],
+            events: eventsListContainer,
             // dateClick: handleDateClick,
             eventDrop: handleEventDrag,
             eventClick: handleEventClick,
@@ -137,8 +210,8 @@ const CalenderApp_Adm = () => {
         calendar.render();
 
         // Draggable functionality
-        // const externalEventsContainer = document.getElementById('external-events');
-        // externalEventsContainer.innerHTML = ''; // 기존에 있는 외부 이벤트 삭제
+        // const externaleventsViewContainer = document.getElementById('external-events');
+        // externaleventsViewContainer.innerHTML = ''; // 기존에 있는 외부 이벤트 삭제
 
         // Draggable functionality
         const draggable = new Draggable(document.getElementById('external-events'), {
@@ -155,10 +228,7 @@ const CalenderApp_Adm = () => {
             calendar.destroy();
             draggable.destroy();
         };
-    };
-    useEffect(() => {
-        Calender_Call();
-    }, []);
+    }, [eventsListContainer]);
 
     // 이벤트를 드래그 하여 옮겼을때 발생
     const handleEventDrag = (info) => {
@@ -170,10 +240,10 @@ const CalenderApp_Adm = () => {
     // 이벤트가 캘린더에 놓였을 때 처리할 로직을 여기에 추가
     const handleEventReceive = (info) => {
         handleEventClickModalAdd_Open();
-        setEventsContainer({
+        setEventsAddContainer({
             EduStated: 'Ing',
             EduColor: info.event.backgroundColor,
-            EduProc: info.draggedEl.attributes.value.nodeValue,
+            // EduProc: info.draggedEl.attributes.value.nodeValue,
             EduBaseline: '1',
             Title: info.event.title,
             StartDate: info.event.startStr,
@@ -186,32 +256,14 @@ const CalenderApp_Adm = () => {
     // 이벤트를 클릭했을때 발생
     const handleEventClick = (info) => {
         handleEventClickModalInfo_Open();
-        console.log(info);
-        let modifiedEndDate;
+        handelCalenderView(info.event.id);
         if (info.event.endStr === '') {
-            modifiedEndDate = info.event.startStr;
+            let modifiedEndDate = info.event.startStr;
         } else {
             const endDate = new Date(info.event.endStr);
             endDate.setDate(endDate.getDate() - 1);
-            modifiedEndDate = endDate.toISOString();
+            let modifiedEndDate = endDate.toISOString();
         }
-
-        setEventsContainer({
-            EduStated: info.event.extendedProps.EduStated,
-            // EduColor: info.event.extendedProps.EduColor,
-            EduColor: info.event.backgroundColor,
-            EduProc: info.event.extendedProps.EduProc,
-            EduBaseline: info.event.extendedProps.EduBaseline,
-            Title: info.event.title,
-            StartDate: info.event.startStr,
-            // EndDate: info.event.endStr,
-            EndDate: moment(modifiedEndDate).format('YYYY-MM-DD'),
-            EduPeople: info.event.extendedProps.EduPeople,
-            EduComplete: info.event.extendedProps.EduComplete
-        });
-        // if (window.confirm(`'[${info.event.title}]' 이벤트를 삭제하시겠습니까? ?`)) {
-        //     info.event.remove();
-        // }
     };
 
     // 이벤트 추가 모달 열기
@@ -244,6 +296,10 @@ const CalenderApp_Adm = () => {
     const handleEventDeleteModal_Close = () => {
         setEventDeleteModal(false);
     };
+
+    useEffect(() => {
+        handelCalenderList();
+    }, []);
 
     return (
         <>
@@ -288,22 +344,36 @@ const CalenderApp_Adm = () => {
             <Modal
                 maskClosable={false}
                 open={eventClickModalAdd}
-                // onOk={handleEventClickModalAdd_Close}
+                onOk={handleEventClickModalAdd_Close}
                 closable={false}
-                width={590}
+                width={450}
                 style={{
                     zIndex: 999
                 }}
                 footer={[]}
             >
-                <>
-                    <Calender_Add
-                        eventsContainer={eventsContainer}
-                        eventClickModalClose={handleEventClickModalAdd_Close}
-                        // eventDeleteModalOpen={handleEventDeleteModal_Open}
-                        // eventDeleteModalClose={handleEventDeleteModal_Close}
-                    />
-                </>
+                <div style={{ textAlign: 'center' }}>
+                    <Calender_Add eventsAddContainer={eventsAddContainer} eventClickModalClose={handleEventClickModalAdd_Close} />
+                    <Button
+                        style={{
+                            marginTop: '20px',
+                            width: '120px',
+                            height: '50px',
+                            borderRadius: '10px',
+                            backgroundColor: eventsAddContainer.EduColor,
+                            color: '#ffffff',
+                            border: '0px',
+                            fontWeight: '500',
+                            fontSize: '17px'
+                        }}
+                        id="open-eig-modal"
+                        data-mact="open"
+                        data-minfo="eig-modal"
+                        onClick={handleEventClickModalAdd_Close}
+                    >
+                        Close
+                    </Button>
+                </div>
             </Modal>
             {/* 이벤트 추가 창 End */}
 
@@ -313,27 +383,41 @@ const CalenderApp_Adm = () => {
                 open={eventClickModalInfo}
                 onOk={handleEventClickModalInfo_Close}
                 closable={false}
-                width={590}
+                width={450}
                 style={{
                     zIndex: 999
                 }}
                 footer={[]}
             >
-                <>
-                    <Calender_Info
-                        eventsContainer={eventsContainer}
-                        eventClickModalClose={handleEventClickModalInfo_Close}
-                        // eventDeleteModal_Open={handleEventDeleteModal_Open}
-                        // eventDeleteModal_Close={handleEventDeleteModal_Close}
-                    />
-                </>
+                <div style={{ textAlign: 'center' }}>
+                    <Calender_Info eventsViewContainer={eventsViewContainer} eventClickModalClose={handleEventClickModalInfo_Close} />
+                    <Button
+                        style={{
+                            marginTop: '20px',
+                            width: '120px',
+                            height: '50px',
+                            borderRadius: '10px',
+                            backgroundColor: eventsViewContainer.EduColor,
+                            color: '#ffffff',
+                            border: '0px',
+                            fontWeight: '500',
+                            fontSize: '17px'
+                        }}
+                        id="open-eig-modal"
+                        data-mact="open"
+                        data-minfo="eig-modal"
+                        onClick={handleEventClickModalInfo_Close}
+                    >
+                        Close
+                    </Button>
+                </div>
             </Modal>
             {/* 이벤트 상세정보 창 End */}
 
             {/* 이벤트 삭제 창 End */}
             <Modal
                 maskClosable={false}
-                open={EventDeleteModal}
+                open={eventDeleteModal}
                 onOk={handleEventDeleteModal_Close}
                 // closable={false}
                 width={590}
