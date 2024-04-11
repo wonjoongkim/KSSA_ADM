@@ -586,7 +586,7 @@ app.post('/Adm/Board_Update', verifyBearerToken, async (req, res) => {
 
 //=============================================================
 // Calender List Start
-app.post('/Adm/Calender_List', async (req, res) => {
+app.post('/Adm/Calender_List', verifyBearerToken, async (req, res) => {
     let conn;
     try {
         conn = await pool.getConnection();
@@ -614,7 +614,7 @@ app.post('/Adm/Calender_List', async (req, res) => {
 
 //=============================================================
 // Calender View Start
-app.post('/Adm/Calender_View', async (req, res) => {
+app.post('/Adm/Calender_View', verifyBearerToken, async (req, res) => {
     const { Idx } = req.body;
     let conn;
     try {
@@ -643,23 +643,24 @@ app.post('/Adm/Calender_View', async (req, res) => {
 
 //=============================================================
 // Calender Delete Start
-app.post('/Adm/Calender_Delete', async (req, res) => {
+app.post('/Adm/Calender_Delete', verifyBearerToken, async (req, res) => {
     const { Idx } = req.body;
     let conn;
     try {
         conn = await pool.getConnection();
-        const query = 'Delete NKSSA_Calender Where Idx = ?';
+        const query = `Delete from NKSSA_Calender Where Idx = ?`;
         const result = await conn.query(query, [Idx]);
         res.json({
-            RET_DATA: result,
-            RET_DESC: '조회 완료',
+            RET_DATA: null,
+            RET_DESC: '삭제 완료',
             RET_CODE: '0000'
         });
     } catch (err) {
         console.error('Error executing MariaDB query:', err);
+
         res.json({
             RET_DATA: null,
-            RET_DESC: `조회 실패_${err}`,
+            RET_DESC: `삭제 실패_${err}`,
             RET_CODE: '1000'
         });
     } finally {

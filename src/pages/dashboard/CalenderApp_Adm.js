@@ -17,9 +17,6 @@ import { Calender_Add } from './Calender_Add';
 import { Calender_Info } from './Calender_Info';
 import './Style.css';
 
-import moment from 'moment';
-import 'moment/locale/ko';
-
 const CalenderApp_Adm = () => {
     const { confirm } = Modal;
     const calendarRef = useRef(null);
@@ -170,7 +167,8 @@ const CalenderApp_Adm = () => {
                           : '',
                   EduBaseline: CalenderViewResponse?.data?.RET_DATA[0].Base_Line,
                   EduPeople: CalenderViewResponse?.data?.RET_DATA[0].Edu_Personnel,
-                  EduComplete: CalenderViewResponse?.data?.RET_DATA[0].Edu_Personnel
+                  EduComplete: CalenderViewResponse?.data?.RET_DATA[0].Edu_Personnel,
+                  EduType: CalenderViewResponse?.data?.RET_DATA[0].Edu_Type
               })
             : '';
     };
@@ -237,13 +235,13 @@ const CalenderApp_Adm = () => {
     };
 
     // 이벤트가 추가 되었을때 발생
-    // 이벤트가 캘린더에 놓였을 때 처리할 로직을 여기에 추가
+    // 이벤트가 캘린더에 놓였을 때 처리
     const handleEventReceive = (info) => {
         handleEventClickModalAdd_Open();
         setEventsAddContainer({
             EduStated: 'Ing',
             EduColor: info.event.backgroundColor,
-            // EduProc: info.draggedEl.attributes.value.nodeValue,
+            EduProc: info.draggedEl.attributes.eduproc.value,
             EduBaseline: '1',
             Title: info.event.title,
             StartDate: info.event.startStr,
@@ -274,7 +272,7 @@ const CalenderApp_Adm = () => {
     // 이벤트 추가 모달 닫기
     const handleEventClickModalAdd_Close = () => {
         setEventClickModalAdd(false);
-        // Calender_Call();
+        handelCalenderList();
     };
 
     // 이벤트 상세정보 모달 열기
@@ -287,14 +285,21 @@ const CalenderApp_Adm = () => {
         setEventClickModalInfo(false);
     };
 
-    // 이벤트 삭제 모달 열기
+    // 이벤트 상세정보 수정 모달 닫기
+    const handleEventClickModalInfo_Edit = () => {
+        setEventClickModalInfo(false);
+        handelCalenderList();
+    };
+
+    // 이벤트 취소 모달 열기
     const handleEventDeleteModal_Open = () => {
         setEventDeleteModal(true);
     };
 
     // 이벤트 삭제 모달 닫기
     const handleEventDeleteModal_Close = () => {
-        setEventDeleteModal(false);
+        setEventClickModalAdd(false);
+        handelCalenderList();
     };
 
     useEffect(() => {
@@ -306,33 +311,33 @@ const CalenderApp_Adm = () => {
             <div id="external-events" style={{ marginBottom: '30px' }}>
                 <Row gutter={[8, 8]} style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Col xs={{ flex: '100%' }} sm={{ flex: '75%' }} md={{ flex: '45%' }} lg={{ flex: '25%' }} xl={{ flex: '10%' }}>
-                        <div className="fc-event fc-color fc-color_1" color="#ed7d31" value="초기">
+                        <div className="fc-event fc-color fc-color_1" color="#ed7d31" value="초기" eduProc="1">
                             검색요원 초기교육
                         </div>
                     </Col>
                     <Col xs={{ flex: '100%' }} sm={{ flex: '75%' }} md={{ flex: '45%' }} lg={{ flex: '25%' }} xl={{ flex: '10%' }}>
-                        <div className="fc-event fc-color fc-color_2" color="#cd5402" value="정기">
+                        <div className="fc-event fc-color fc-color_2" color="#cd5402" value="정기" eduProc="2">
                             검색요원 정기교육
                         </div>
                     </Col>
                     <Col xs={{ flex: '100%' }} sm={{ flex: '75%' }} md={{ flex: '45%' }} lg={{ flex: '25%' }} xl={{ flex: '10%' }}>
-                        <div className="fc-event fc-color fc-color_3" color="#a54504" value="인증">
+                        <div className="fc-event fc-color fc-color_3" color="#a54504" value="인증" eduProc="3">
                             검색요원 인증평가
                         </div>
                     </Col>
 
                     <Col xs={{ flex: '100%' }} sm={{ flex: '75%' }} md={{ flex: '45%' }} lg={{ flex: '25%' }} xl={{ flex: '10%' }}>
-                        <div className="fc-event fc-color fc-color_4" color="#5b9bd5">
+                        <div className="fc-event fc-color fc-color_4" color="#5b9bd5" value="초기" eduProc="4">
                             항공경비 초기교육
                         </div>
                     </Col>
                     <Col xs={{ flex: '100%' }} sm={{ flex: '75%' }} md={{ flex: '45%' }} lg={{ flex: '25%' }} xl={{ flex: '10%' }}>
-                        <div className="fc-event fc-color fc-color_5" color="#3085d3">
+                        <div className="fc-event fc-color fc-color_5" color="#3085d3" value="정기" eduProc="5">
                             항공경비 정기교육
                         </div>
                     </Col>
                     <Col xs={{ flex: '100%' }} sm={{ flex: '75%' }} md={{ flex: '45%' }} lg={{ flex: '25%' }} xl={{ flex: '10%' }}>
-                        <div className="fc-event fc-color fc-color_6" color="#255d91">
+                        <div className="fc-event fc-color fc-color_6" color="#255d91" value="인증" eduProc="6">
                             항공경비 인증평가
                         </div>
                     </Col>
@@ -353,7 +358,11 @@ const CalenderApp_Adm = () => {
                 footer={[]}
             >
                 <div style={{ textAlign: 'center' }}>
-                    <Calender_Add eventsAddContainer={eventsAddContainer} eventClickModalClose={handleEventClickModalAdd_Close} />
+                    <Calender_Add
+                        eventsAddContainer={eventsAddContainer}
+                        eventClickModalClose={handleEventClickModalAdd_Close}
+                        eventClickModalCancel={handleEventDeleteModal_Close}
+                    />
                     <Button
                         style={{
                             marginTop: '20px',
@@ -390,7 +399,11 @@ const CalenderApp_Adm = () => {
                 footer={[]}
             >
                 <div style={{ textAlign: 'center' }}>
-                    <Calender_Info eventsViewContainer={eventsViewContainer} eventClickModalClose={handleEventClickModalInfo_Close} />
+                    <Calender_Info
+                        eventsViewContainer={eventsViewContainer}
+                        eventClickModalEdit={handleEventClickModalInfo_Edit}
+                        eventClickModalDelete={handleEventDeleteModal_Close}
+                    />
                     <Button
                         style={{
                             marginTop: '20px',
@@ -415,7 +428,7 @@ const CalenderApp_Adm = () => {
             {/* 이벤트 상세정보 창 End */}
 
             {/* 이벤트 삭제 창 End */}
-            <Modal
+            {/* <Modal
                 maskClosable={false}
                 open={eventDeleteModal}
                 onOk={handleEventDeleteModal_Close}
@@ -442,7 +455,7 @@ const CalenderApp_Adm = () => {
                         확인
                     </Button>
                 </div>
-            </Modal>
+            </Modal> */}
             {/* 이벤트 삭제 창 End */}
         </>
     );

@@ -16,7 +16,7 @@ export const calenderManagement = createApi({
         }
     }),
     endpoints: (builder) => ({
-        // Calender List
+        // Calender List (리스트)
         CalenderList: builder.mutation({
             query: (body) => ({
                 url: '/Adm/Calender_List',
@@ -25,10 +25,37 @@ export const calenderManagement = createApi({
             })
         }),
 
-        // Calender View
+        // Calender View (상세)
         CalenderView: builder.mutation({
             query: (body) => ({
                 url: '/Adm/Calender_View',
+                method: 'POST',
+                body: body
+            })
+        }),
+
+        // Calender Insert (입력)
+        CalenderInsert: builder.mutation({
+            query: (body) => ({
+                url: '/Adm/Calender_Insert',
+                method: 'POST',
+                body: body
+            })
+        }),
+
+        // Calender Update (수정)
+        CalenderUpdate: builder.mutation({
+            query: (body) => ({
+                url: '/Adm/Calender_Update',
+                method: 'POST',
+                body: body
+            })
+        }),
+
+        // Calender Delete (삭제)
+        CalenderDelete: builder.mutation({
+            query: (body) => ({
+                url: '/Adm/Calender_Delete',
                 method: 'POST',
                 body: body
             })
@@ -36,4 +63,10 @@ export const calenderManagement = createApi({
     })
 });
 
-export const { useCalenderListMutation, useCalenderViewMutation } = calenderManagement;
+export const {
+    useCalenderListMutation,
+    useCalenderViewMutation,
+    useCalenderInsertMutation,
+    useCalenderUpdateMutation,
+    useCalenderDeleteMutation
+} = calenderManagement;

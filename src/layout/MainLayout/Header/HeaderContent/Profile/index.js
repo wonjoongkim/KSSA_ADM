@@ -79,8 +79,12 @@ const Profile = () => {
     const [loginInfo, setLoginInfo] = useState({});
     const handleLoginInfo = async () => {
         const response = await getLoginInfo();
-        setLoginInfo(response.data.RET_DATA);
-        response.data.RET_DATA === null ? '' : localStorage.setItem('authCd', response.data.RET_DATA.authCd);
+        if (response.data === undefined) {
+            navigate('/login');
+        } else {
+            setLoginInfo(response.data.RET_DATA);
+            // response.data.RET_DATA === null ? '' : localStorage.setItem('authCd', response.data.RET_DATA.authCd);
+        }
     };
 
     // 로그아웃 처리
