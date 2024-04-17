@@ -1,6 +1,6 @@
 /* eslint-disable*/
 import React, { useState, useEffect, useRef } from 'react';
-import { useLocation, Link } from 'react-router-dom';
+import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { FloatButton, Breadcrumb, Spin, Card, Row, Col, DatePicker, Input, Modal, Upload, Space, Button, Radio, Divider } from 'antd';
 import MainCard from 'components/MainCard';
 import { HomeOutlined, EditOutlined, InboxOutlined, DeleteOutlined } from '@ant-design/icons';
@@ -17,6 +17,7 @@ import { useDropzone } from 'react-dropzone';
 
 export const Write = () => {
     const location = useLocation();
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [boardProp, setBoardProp] = useState(null); // 타겟 타이틀 명
     const [flagProp, setFlagProp] = useState(null); // 타겟 게시판 명
@@ -36,7 +37,7 @@ export const Write = () => {
     const [BoardInsertApi] = useBoardInsertMutation();
     const handel_BoardInsert_Api = async () => {
         const UploadResponse = await BoardInsertApi({
-            Board_Type: 'Notice',
+            Board_Type: flagProp,
             Subject: itemContainer?.Subject,
             Contents: itemContainer?.Contents,
             FileKey: itemContainer?.FileKey,
@@ -45,11 +46,12 @@ export const Write = () => {
         UploadResponse?.data?.RET_CODE === '0000'
             ? Modal.success({
                   content: '등록 완료',
-                  style: { top: 320 }
-                  //   onOk() {
-                  //       //   form.resetFields();
-                  //       //   props.SaveClose();
-                  //   }
+                  //   style: { top: 320 }
+                  onOk() {
+                      Lists();
+                      //       //   form.resetFields();
+                      //       //   props.SaveClose();
+                  }
               })
             : Modal.error({
                   content: '등록 오류',
@@ -164,6 +166,12 @@ export const Write = () => {
         handel_BoardInsert_Api();
     };
     // 추가 End
+
+    // 목록 Start
+    const Lists = () => {
+        navigate('/notice/List', { state: { board: boardProp, flag: flagProp, title: titleProp } });
+    };
+    // 목록 End
 
     useEffect(() => {
         window.addEventListener('resize', handleResize);
@@ -311,8 +319,8 @@ export const Write = () => {
                         </Col>
                     </Row>
                     <Divider />
-                    <Row>
-                        <Col>
+                    <Row gutter={[16, 0]} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                        <Col span={2}>
                             <Button
                                 icon={<EditOutlined />}
                                 onClick={(e) => Writes()}
@@ -320,6 +328,16 @@ export const Write = () => {
                                 style={{ height: '45px', width: '80px' }}
                             >
                                 등록
+                            </Button>
+                        </Col>
+                        <Col span={2}>
+                            <Button
+                                icon={<EditOutlined />}
+                                onClick={(e) => Lists()}
+                                type="primary"
+                                style={{ backgroundColor: '#70AD47', height: '45px', width: '80px' }}
+                            >
+                                목록
                             </Button>
                         </Col>
                     </Row>

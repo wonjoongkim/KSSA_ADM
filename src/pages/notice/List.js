@@ -37,7 +37,7 @@ export const List = () => {
 
     const [board_Search_Data, setBoard_Search_Data] = useState(''); // 게시판 검색 Data
 
-    const [board_Total, setBoard_Total] = useState(null); // 게시판 리스트 Data
+    const [board_Total, setBoard_Total] = useState('0'); // 게시판 리스트 Data
 
     const DataOptions = { year: 'numeric', month: 'numeric', day: 'numeric' };
     // API Start
@@ -52,7 +52,8 @@ export const List = () => {
         if (BoardListResponse?.data?.RET_CODE === '0000') {
             setBoard_ListData(
                 BoardListResponse?.data?.RET_DATA.map((d, i) => ({
-                    key: i + 1,
+                    key: d.Idx,
+                    num: i + 1,
                     idx: d.Idx,
                     board_Type: d.Board_Type,
                     title: d.Subject,
@@ -60,7 +61,11 @@ export const List = () => {
                     date: new Date(d.InDate).toLocaleTimeString('ko-KR', DataOptions).substring(0, 11)
                 }))
             );
-            setBoard_Total(BoardListResponse?.data?.RET_DATA[0].Total);
+            setBoard_Total(
+                BoardListResponse?.data?.RET_DATA[0]?.Total === null || BoardListResponse?.data?.RET_DATA[0]?.Total === undefined
+                    ? '0'
+                    : BoardListResponse?.data?.RET_DATA[0]?.Total
+            );
         } else {
             setBoard_ListData('');
         }
@@ -92,6 +97,27 @@ export const List = () => {
 
     // 게시물 삭제 Start
     const [BoardDeleteApi] = useBoardDeleteMutation();
+    const handleBoardDelete = async (idx) => {
+        const BoardDeleteResponse = await BoardDeleteApi({
+            Board_Type: flagProp,
+            Idx: selectedRowKeys
+        });
+        if (BoardDeleteResponse?.data?.RET_CODE === '0000') {
+            console.log(hasSelected);
+            Modal.success({
+                content: '삭제 성공.',
+                onOk() {
+                    setSelectedRowKeys('');
+                    handleBoardList(flagProp, '');
+                }
+            });
+        } else {
+            Modal.error({
+                content: '삭제 실패.',
+                onOk() {}
+            });
+        }
+    };
     // 게시물 삭제 End
 
     // API End
@@ -112,11 +138,11 @@ export const List = () => {
     // 체크박스 End
 
     // 체크박스 선택수량
-    const hasSelected = selectedRowKeys.length > 0;
+    const hasSelected = selectedRowKeys.length > 0 ? true : false;
 
     // 검색 Search
     const onSearch = (value, _e, info) => {
-        console.log(value);
+        // console.log(value);
         setBoard_Search_Data(value);
         handleBoardList(flagProp, value);
     };
@@ -124,7 +150,7 @@ export const List = () => {
     const columns = [
         {
             title: 'No',
-            dataIndex: 'key',
+            dataIndex: 'num',
             width: '80px',
             align: 'center'
         },
@@ -271,6 +297,7 @@ export const List = () => {
                                 <Button
                                     icon={<DeleteFilled />}
                                     type="primary"
+                                    onClick={() => handleBoardDelete()}
                                     style={{ backgroundColor: '#fa541c', height: '45px', width: '80px' }}
                                 >
                                     삭제

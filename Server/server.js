@@ -551,12 +551,12 @@ app.post('/Adm/Board_View', async (req, res) => {
 //=============================================================
 // Board 등록 Start
 app.post('/Adm/Board_Insert', verifyBearerToken, async (req, res) => {
-    const { Board_Type, Subject, Contents, File_Key, InDate } = req.body;
+    const { Board_Type, Subject, Contents, FileKey, InDate } = req.body;
     let conn;
     try {
         conn = await pool.getConnection();
         const query = 'INSERT INTO NKSSA_Board (Board_Type, Subject, Contents, File_Key, InDate) VALUES (?, ?, ?, ?, ?)';
-        const result = await conn.query(query, [Board_Type, Subject, Contents, File_Key, InDate]);
+        const result = await conn.query(query, [Board_Type, Subject, Contents, FileKey, InDate]);
         res.json({
             RET_DATA: null,
             RET_DESC: '저장 완료',
@@ -611,8 +611,35 @@ app.post('/Adm/Board_Delete', verifyBearerToken, async (req, res) => {
     let conn;
     try {
         conn = await pool.getConnection();
-        const query = 'Delete From NKSSA_Board where Idx = ?';
-        const result = await conn.query(query, [Idx]);
+        for (const idx of Idx) {
+            // NKSSA_Board 테이블에서 해당 Idx의 File_Key를 가져옴
+            const File_Q = `SELECT File_Key FROM NKSSA_Board WHERE Idx = ${idx}`;
+            const Result_Q = await conn.query(File_Q);
+
+            if (Result_Q.length > 0) {
+                const File_N = `SELECT Save_FileName FROM NKSSA_FileAttach WHERE File_Key = '${Result_Q[0].File_Key}'`;
+                const Result_N = await conn.query(File_N);
+
+                // NKSSA_FileAttach 테이블에서 해당 File_Key에 대한 파일을 삭제
+                const File_D = `DELETE FROM NKSSA_FileAttach WHERE File_Key = '${Result_Q[0].File_Key}'`;
+                await conn.query(File_D);
+
+                fs.unlink(`uploads/${Result_N[0].Save_FileName}`, async (err) => {
+                    if (err) {
+                        console.error('파일 삭제 중 오류 발생:', err);
+                        return res.status(500).json({ message: '파일 삭제 중 오류가 발생했습니다.' });
+                    }
+                    // 데이터베이스에서 파일 정보 삭제
+                    const deleteFileQuery = `Delete From NKSSA_FileAttach Where File_Key = '${Result_Q[0].File_Key}'`;
+                    await conn.query(deleteFileQuery);
+                });
+            }
+
+            // NKSSA_Board 테이블에서 해당 Idx의 데이터를 삭제
+            const query = `DELETE FROM NKSSA_Board WHERE Idx = ${idx}`;
+            await conn.query(query);
+        }
+
         res.json({
             RET_DATA: null,
             RET_DESC: '삭제 완료',
