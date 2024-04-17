@@ -1,9 +1,24 @@
 /* eslint-disable*/
 import React, { useState, useEffect } from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { FloatButton, Breadcrumb, Spin, Row, Col, Table, Input, Button, Space, Modal } from 'antd';
+import { FloatButton, Breadcrumb, Spin, Row, Col, Table, Input, Button, Space, Modal, Tooltip } from 'antd';
 import MainCard from 'components/MainCard';
-import { HomeOutlined, EditOutlined, SearchOutlined, ScissorOutlined, EditFilled, DeleteFilled } from '@ant-design/icons';
+import {
+    HomeOutlined,
+    FileDoneOutlined,
+    DownloadOutlined,
+    EyeOutlined,
+    ScissorOutlined,
+    EditFilled,
+    DeleteFilled
+} from '@ant-design/icons';
+import {
+    useBoardListMutation,
+    useBoardViewMutation,
+    useBoardInsertMutation,
+    useBoardUpdateMutation,
+    useBoardDeleteMutation
+} from '../../hooks/api/BoardManagement/BoardManagement';
 
 import './Style.css';
 export const List = () => {
@@ -16,6 +31,70 @@ export const List = () => {
     const [boardProp, setBoardProp] = useState(null); // 타겟 타이틀 명
     const [flagProp, setFlagProp] = useState(null); // 타겟 게시판 명
     const [titleProp, setTitleProp] = useState(null); // 타겟 게시판 타이틀
+    const [board_ListData, setBoard_ListData] = useState(null); // 게시판 리스트 Data
+    const [board_ViewData, setBoard_ViewData] = useState(null); // 게시판 상세정보 Data
+    const [board_FileData, setBoard_FileData] = useState(null); // 게시판 파일 Data
+
+    const [board_Search_Data, setBoard_Search_Data] = useState(''); // 게시판 검색 Data
+
+    const [board_Total, setBoard_Total] = useState(null); // 게시판 리스트 Data
+
+    const DataOptions = { year: 'numeric', month: 'numeric', day: 'numeric' };
+    // API Start
+
+    // 게시물 리스트 Start
+    const [BoardListApi] = useBoardListMutation();
+    const handleBoardList = async (flag, search) => {
+        const BoardListResponse = await BoardListApi({
+            Board_Type: flag,
+            Board_Search: search
+        });
+        if (BoardListResponse?.data?.RET_CODE === '0000') {
+            setBoard_ListData(
+                BoardListResponse?.data?.RET_DATA.map((d, i) => ({
+                    key: i + 1,
+                    idx: d.Idx,
+                    board_Type: d.Board_Type,
+                    title: d.Subject,
+                    visited: d.Visited,
+                    date: new Date(d.InDate).toLocaleTimeString('ko-KR', DataOptions).substring(0, 11)
+                }))
+            );
+            setBoard_Total(BoardListResponse?.data?.RET_DATA[0].Total);
+        } else {
+            setBoard_ListData('');
+        }
+        setLoading(false);
+    };
+    // 게시물 리스트 End
+
+    // 게시물 상세정보 Start
+    const [BoardViewApi] = useBoardViewMutation();
+    const handleBoardView = async (idx) => {
+        const BoardViewResponse = await BoardViewApi({
+            Board_Type: flagProp,
+            Idx: idx
+        });
+
+        if (BoardViewResponse?.data?.RET_CODE === '0000') {
+            setBoard_ViewData({
+                Title: BoardViewResponse?.data?.RET_DATA?.result[0].Subject,
+                Contents: BoardViewResponse?.data?.RET_DATA?.result[0].Contents,
+                Date: BoardViewResponse?.data?.RET_DATA?.result[0].InDate
+            });
+            setBoard_FileData(BoardViewResponse?.data?.RET_DATA?.file_result);
+        } else {
+            setBoard_ViewData('');
+        }
+        setViewModal(true);
+    };
+    // 게시물 상세정보 End
+
+    // 게시물 삭제 Start
+    const [BoardDeleteApi] = useBoardDeleteMutation();
+    // 게시물 삭제 End
+
+    // API End
 
     // 총 개시물
     const showTotal = (total) => `Total ${total} items`;
@@ -36,7 +115,11 @@ export const List = () => {
     const hasSelected = selectedRowKeys.length > 0;
 
     // 검색 Search
-    const onSearch = (value, _e, info) => console.log(value);
+    const onSearch = (value, _e, info) => {
+        console.log(value);
+        setBoard_Search_Data(value);
+        handleBoardList(flagProp, value);
+    };
 
     const columns = [
         {
@@ -48,27 +131,26 @@ export const List = () => {
         {
             title: '제목',
             dataIndex: 'title',
-            render: (text, record) => (
+            render: (_, { title, idx }) => (
                 <Button
                     type="text"
                     onClick={() => {
-                        setViewModal(true);
-                        // setViewLoading(true);
+                        handleBoardView(idx);
                     }}
                 >
-                    {text}
+                    {title}
                 </Button>
             )
         },
         {
             title: '조회수',
-            dataIndex: 'stated',
+            dataIndex: 'visited',
             width: '120px',
             align: 'center'
         },
         {
             title: '등록일',
-            dataIndex: 'indate',
+            dataIndex: 'date',
             width: '150px',
             align: 'center'
         },
@@ -92,15 +174,6 @@ export const List = () => {
             align: 'center'
         }
     ];
-    const data = [];
-    for (let i = 1; i < 600; i++) {
-        data.push({
-            key: i,
-            title: `${titleProp} ${i}`,
-            stated: i,
-            indate: `2024-02-09`
-        });
-    }
 
     const onShowSizeChange = (current, pageSize) => {
         console.log(current, pageSize);
@@ -111,16 +184,11 @@ export const List = () => {
     };
 
     useEffect(() => {
-        const timerId = setTimeout(() => {
-            setLoading(false);
-        }, 300);
-        return () => clearTimeout(timerId);
-    }, []);
-
-    useEffect(() => {
+        setLoading(true);
         setBoardProp(location.state.board);
         setFlagProp(location.state.flag);
         setTitleProp(location.state.title);
+        handleBoardList(location.state.flag, '');
     }, [location.state]);
 
     return (
@@ -166,7 +234,7 @@ export const List = () => {
                 </Col>
                 <Col xs={{ span: 10, offset: 0 }} lg={{ span: 16, offset: 0 }}>
                     <Input.Search
-                        placeholder="※ 통합 검색 (차수명, 차수, 교육기간)"
+                        placeholder="※ 통합 검색 (제목)"
                         onSearch={onSearch}
                         allowClear
                         enterButton
@@ -178,7 +246,7 @@ export const List = () => {
                     lg={{ span: 2, offset: 1 }}
                     style={{ fontSize: '14px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
                 >
-                    총 {data.length} 건
+                    총 {board_Total} 건
                 </Col>
             </Row>
 
@@ -228,7 +296,7 @@ export const List = () => {
                             bordered
                             rowSelection={rowSelection}
                             columns={columns}
-                            dataSource={data}
+                            dataSource={board_ListData}
                             size="large"
                             pagination={{
                                 showQuickJumper: true,
@@ -272,7 +340,7 @@ export const List = () => {
                                 fontWeight: '600'
                             }}
                         >
-                            2023년 보안검색장비산업 발전세미나 개최
+                            {board_ViewData?.Title}
                         </Col>
                         <Col
                             span={24}
@@ -284,16 +352,12 @@ export const List = () => {
                                 fontSize: '15px'
                             }}
                         >
-                            2023-10-31
+                            {new Date(board_ViewData?.Date).toLocaleTimeString('ko-KR', DataOptions)}
                         </Col>
                     </Row>
                     <Row style={{ padding: '30px 0px' }}>
                         <Col>
-                            <p>❍ 행사명 : 2023년 보안검색장비산업 발전세미나</p>
-                            <p>❍ 일 시 : ′23. 9.15 (금) 13:30∼17:30</p>
-                            <p>❍ 장 소 : 킨텍스 제2전시장 308호</p>
-                            <p>❍ 주 관 : 대한민국항공보안협회 ∙ 충남 서천군</p>
-                            <p>❍ 주 최 : 한국항공우주산업진흥협회 ∙ 한서대학교</p>
+                            <div dangerouslySetInnerHTML={{ __html: board_ViewData?.Contents }} />
                         </Col>
                     </Row>
                     <Row
@@ -306,19 +370,37 @@ export const List = () => {
                             height: '90px'
                         }}
                     >
-                        <Col xs={11} lg={14} style={{ display: 'flex', alignItems: 'center', justifyContent: 'start' }}>
-                            <a href="#">보안검색장비_보안검색장비_보안검색장비_보안검색장비.PDF</a>
-                        </Col>
-                        <Col xs={13} lg={10} style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-                            <Space>
-                                <Button type="default" style={{ height: '45px', backgroundColor: '#efefef' }}>
-                                    다운로드
-                                </Button>
-                                <Button type="default" style={{ height: '45px', backgroundColor: '#efefef' }}>
-                                    미리보기
-                                </Button>
-                            </Space>
-                        </Col>
+                        {board_FileData?.map((d, i) => (
+                            <>
+                                <Col xs={11} lg={14} style={{ display: 'flex', alignItems: 'center', justifyContent: 'start' }}>
+                                    <a href="#">
+                                        <FileDoneOutlined /> {d.Original_FileName}
+                                    </a>
+                                </Col>
+                                <Col xs={13} lg={10} style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                                    <Space>
+                                        <Tooltip title={<span style={{ fontSize: '13px' }}>다운로드</span>} color={'#f50'} placement="top">
+                                            <Button
+                                                type="default"
+                                                icon={<DownloadOutlined />}
+                                                style={{ height: '30px', width: '45px', backgroundColor: '#efefef', fontSize: '13px' }}
+                                            ></Button>
+                                        </Tooltip>
+                                        <Tooltip
+                                            title={<span style={{ fontSize: '13px' }}>미리보기</span>}
+                                            color={'#108ee9'}
+                                            placement="top"
+                                        >
+                                            <Button
+                                                type="default"
+                                                icon={<EyeOutlined />}
+                                                style={{ height: '30px', width: '45px', backgroundColor: '#efefef', fontSize: '13px' }}
+                                            ></Button>
+                                        </Tooltip>
+                                    </Space>
+                                </Col>
+                            </>
+                        ))}
                     </Row>
                     <Row
                         style={{

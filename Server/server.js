@@ -114,9 +114,9 @@ async function verifyPassword(password, hashedPassword) {
 //=============================================================
 // 업로드된 파일을 저장할 디렉토리 설정 / 미들웨어 Start
 const storage = multer.diskStorage({
-    dest: 'http://localhost:4000/uploads/',
+    dest: 'uploads/',
     destination: function (req, file, cb) {
-        cb(null, 'http://localhost:4000/uploads/');
+        cb(null, 'uploads/');
     },
     filename: function (req, file, cb) {
         const uniqueFileName = uuidv4(); // 고유한 파일 이름 생성
@@ -127,7 +127,6 @@ const storage = multer.diskStorage({
     }
 });
 // 업로드된 파일을 저장할 디렉토리 설정 / 미들웨어 End
-
 //=============================================================
 
 //#############################################################
@@ -152,13 +151,20 @@ app.post('/FileUpload', (req, res) => {
             const File_Key = uuidv4();
             for (const file of files) {
                 const Original_FileName = file.originalname;
-                const Save_FileName = file.filename;
+                const Save_FileName = encodeURIComponent(file.filename); // 파일명을 UTF-8로 인코딩합니다.
                 const File_Path = file.path;
                 const File_Ext = file.originalname.split('.').pop();
                 const File_Size = file.size;
                 const File_query =
                     'INSERT INTO NKSSA_FileAttach (File_Key, Original_FileName, Save_FileName, File_Path, File_Ext, File_Size) VALUES (?, ?, ?, ?, ?, ? )';
-                const result = await conn.query(File_query, [File_Key, Original_FileName, Save_FileName, File_Path, File_Ext, File_Size]);
+                const result = await conn.query(File_query, [
+                    File_Key,
+                    Original_FileName,
+                    Save_FileName,
+                    `http://localhost:3001/${File_Path}`,
+                    File_Ext,
+                    File_Size
+                ]);
             }
             res.json({
                 RET_DATA: { FileKey: File_Key },
@@ -176,8 +182,8 @@ app.post('/FileUpload', (req, res) => {
     });
 });
 
-// app.post("/FileDelete", verifyBearerToken, async (req, res) => {
-app.post('/FileDelete', async (req, res) => {
+app.post('/FileDelete', verifyBearerToken, async (req, res) => {
+    // app.post('/FileDelete', async (req, res) => {
     const File_Idx = req.body.FileIdx;
     const File_Nm = req.body.FileNm;
     let conn;
@@ -470,15 +476,29 @@ app.post('/Adm/Contets_Update', verifyBearerToken, async (req, res) => {
 //=============================================================
 // Board List Start
 app.post('/Adm/Board_List', async (req, res) => {
-    const { Board_Type } = req.body;
+    const { Board_Type, Board_Search } = req.body;
     let conn;
     try {
         conn = await pool.getConnection();
-        const query = "Select Idx, Board_Type, Subject, Contents, Visited, InDate From NKSSA_Board Where Board_Type = ? And State = '0' ";
-        const result = await conn.query(query, [Board_Type]);
+        const query = `Select (
+            SELECT CAST(COUNT(Idx) AS UNSIGNED) 
+            FROM NKSSA_Board 
+            WHERE Board_Type = ?
+        ) AS Total, Idx, Board_Type, Subject, Contents, File_Key, Visited, InDate From NKSSA_Board Where Board_Type = ? And State = '0' And Subject like ?`;
+        const result = await conn.query(query, [Board_Type, Board_Type, `%${Board_Search}%`]);
+        const serializedResult = result.map((row) => ({
+            Total: String(row.Total),
+            Idx: row.Idx,
+            Board_Type: row.Board_Type,
+            Subject: row.Subject,
+            Contents: row.Contents,
+            File_Key: row.File_Key,
+            Visited: row.Visited,
+            InDate: row.InDate
+        }));
 
         res.json({
-            RET_DATA: result,
+            RET_DATA: serializedResult,
             RET_CODE: '0000'
         });
     } catch (err) {
@@ -582,6 +602,34 @@ app.post('/Adm/Board_Update', verifyBearerToken, async (req, res) => {
     }
 });
 // Board 수정 End
+//=============================================================
+
+//=============================================================
+// Board 삭제 Start
+app.post('/Adm/Board_Delete', verifyBearerToken, async (req, res) => {
+    const { Idx } = req.body;
+    let conn;
+    try {
+        conn = await pool.getConnection();
+        const query = 'Delete From NKSSA_Board where Idx = ?';
+        const result = await conn.query(query, [Idx]);
+        res.json({
+            RET_DATA: null,
+            RET_DESC: '삭제 완료',
+            RET_CODE: '0000'
+        });
+    } catch (err) {
+        console.error('Error executing MariaDB query:', err);
+        res.json({
+            RET_DATA: null,
+            RET_DESC: `삭제 실패_${err}`,
+            RET_CODE: '1000'
+        });
+    } finally {
+        if (conn) conn.release();
+    }
+});
+// Board 삭제 End
 //=============================================================
 
 //=============================================================

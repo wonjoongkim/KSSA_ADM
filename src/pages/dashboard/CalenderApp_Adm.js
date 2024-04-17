@@ -185,7 +185,7 @@ const CalenderApp_Adm = () => {
                 center: 'title',
                 right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
             },
-
+            width: '100%',
             height: '850px',
             // defaultView: 'agendaDay',
             initialDate: formattedDate,

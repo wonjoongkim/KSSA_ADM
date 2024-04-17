@@ -5,7 +5,7 @@ import { FloatButton, Breadcrumb, Spin, Card, Row, Col, DatePicker, Input, Modal
 import MainCard from 'components/MainCard';
 import { HomeOutlined, EditOutlined, InboxOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useFileDeleteMutation, useFileUploadMutation } from '../../hooks/api/FileManagement/FileManagement';
-import { useBoardInsertMutation } from '../../hooks/api/BoardManagement/BoardManagement';
+import { useBoardInsertMutation, useBoardUpdateMutation } from '../../hooks/api/BoardManagement/BoardManagement';
 import '@toast-ui/editor/dist/i18n/ko-kr';
 import '@toast-ui/editor/dist/toastui-editor.css';
 import colorSyntax from '@toast-ui/editor-plugin-color-syntax';
@@ -32,15 +32,10 @@ export const Write = () => {
     const [selectedFile, setselectedFile] = useState([]);
 
     //=================================================================
-    // Board 조회 Start
-    // Board 조회 End
-    //=================================================================
-
-    //=================================================================
     // Board 등록 Start
-    const [BoardInsert] = useBoardInsertMutation();
+    const [BoardInsertApi] = useBoardInsertMutation();
     const handel_BoardInsert_Api = async () => {
-        const UploadResponse = await BoardInsert({
+        const UploadResponse = await BoardInsertApi({
             Board_Type: 'Notice',
             Subject: itemContainer?.Subject,
             Contents: itemContainer?.Contents,
@@ -64,6 +59,10 @@ export const Write = () => {
     };
     // Board 등록 End
     //=================================================================
+
+    // 게시물 업데이트 Start
+    const [BoardUpdateApi] = useBoardUpdateMutation();
+    // 게시물 업데이트 End
 
     //=================================================================
     // 파일 업로드 처리 Start

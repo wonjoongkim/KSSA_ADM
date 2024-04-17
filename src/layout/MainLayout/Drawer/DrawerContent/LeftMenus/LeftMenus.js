@@ -23,29 +23,29 @@ function getItem(label, key, icon, children, type) {
 }
 
 const items = [
-    getItem('교육원소개', 'sub1', <AppstoreAddOutlined />, [
-        getItem(<Link to="/introduction/Greeting">원장인사</Link>, '11', <FileTextOutlined />),
-        getItem(<Link to="/introduction/Groups">조직도</Link>, '12', <FileTextOutlined />),
-        getItem(<Link to="/introduction/Facility">교육시설</Link>, '13', <FileTextOutlined />),
-        getItem(<Link to="/introduction/Directions">오시는길</Link>, '14', <FileTextOutlined />)
-    ]),
+    // getItem('교육원소개', 'sub1', <AppstoreAddOutlined />, [
+    //     getItem(<Link to="/introduction/Greeting">원장인사</Link>, '11', <FileTextOutlined />),
+    //     getItem(<Link to="/introduction/Groups">조직도</Link>, '12', <FileTextOutlined />),
+    //     getItem(<Link to="/introduction/Facility">교육시설</Link>, '13', <FileTextOutlined />),
+    //     getItem(<Link to="/introduction/Directions">오시는길</Link>, '14', <FileTextOutlined />)
+    // ]),
 
-    getItem('교육과정', 'sub2', <AppstoreAddOutlined />, [
-        getItem(<Link to="/curriculum/Security">보안검색 교육과정</Link>, '21', <FileTextOutlined />),
-        getItem(<Link to="/curriculum/Airline">항공경비 교육과정</Link>, '22', <FileTextOutlined />),
-        getItem(<Link to="/curriculum/Operate">정원 및 운영계획</Link>, '23', <FileTextOutlined />),
-        getItem(<Link to="/curriculum/Admission">입교절차</Link>, '24', <FileTextOutlined />)
-    ]),
+    // getItem('교육과정', 'sub2', <AppstoreAddOutlined />, [
+    //     getItem(<Link to="/curriculum/Security">보안검색 교육과정</Link>, '21', <FileTextOutlined />),
+    //     getItem(<Link to="/curriculum/Airline">항공경비 교육과정</Link>, '22', <FileTextOutlined />),
+    //     getItem(<Link to="/curriculum/Operate">정원 및 운영계획</Link>, '23', <FileTextOutlined />),
+    //     getItem(<Link to="/curriculum/Admission">입교절차</Link>, '24', <FileTextOutlined />)
+    // ]),
 
-    getItem('직업훈련비지원', 'sub3', <AppstoreAddOutlined />, [
-        getItem(<Link to="/support/Reason">관련근거</Link>, '31', <FileTextOutlined />),
-        getItem(<Link to="/support/Application">신청방법</Link>, '32', <FileTextOutlined />)
-    ]),
+    // getItem('직업훈련비지원', 'sub3', <AppstoreAddOutlined />, [
+    //     getItem(<Link to="/support/Reason">관련근거</Link>, '31', <FileTextOutlined />),
+    //     getItem(<Link to="/support/Application">신청방법</Link>, '32', <FileTextOutlined />)
+    // ]),
 
     getItem('게시판', 'sub4', <AppstoreAddOutlined />, [
         // getItem(<Link to="/notice/Notification">공지사항</Link>, '41', <FileTextOutlined />),
         getItem(
-            <Link to={{ pathname: '/notice/List' }} state={{ board: '게시판', flag: 'Notification', title: '공지사항' }}>
+            <Link to={{ pathname: '/notice/List' }} state={{ board: '게시판', flag: 'Notice', title: '공지사항' }}>
                 공지사항
             </Link>,
             '41',

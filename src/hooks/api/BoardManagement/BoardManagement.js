@@ -16,10 +16,42 @@ export const boardManagement = createApi({
         }
     }),
     endpoints: (builder) => ({
-        // 콘텐츠 관리 > 언어 관리 > 목록
+        // 게시판 리스트
+        BoardList: builder.mutation({
+            query: (body) => ({
+                url: 'Adm/Board_List',
+                method: 'POST',
+                body: body
+            })
+        }),
+        // 게시판 상세
+        BoardView: builder.mutation({
+            query: (body) => ({
+                url: 'Adm/Board_View',
+                method: 'POST',
+                body: body
+            })
+        }),
+        // 게시판 등록
         BoardInsert: builder.mutation({
             query: (body) => ({
-                url: 'adm/Board_Insert',
+                url: 'Adm/Board_Insert',
+                method: 'POST',
+                body: body
+            })
+        }),
+        // 게시판 수정
+        BoardUpdate: builder.mutation({
+            query: (body) => ({
+                url: 'Adm/Board_Update',
+                method: 'POST',
+                body: body
+            })
+        }),
+        // 게시판 삭제
+        BoardDelete: builder.mutation({
+            query: (body) => ({
+                url: 'Adm/Board_Delete',
                 method: 'POST',
                 body: body
             })
@@ -27,4 +59,5 @@ export const boardManagement = createApi({
     })
 });
 
-export const { useBoardInsertMutation } = boardManagement;
+export const { useBoardListMutation, useBoardViewMutation, useBoardInsertMutation, useBoardUpdateMutation, useBoardDeleteMutation } =
+    boardManagement;
