@@ -89,7 +89,13 @@ const items = [
             '53',
             <FileTextOutlined />
         ),
-        getItem(<Link to="/reference/Picture">사진자료</Link>, '54', <FileTextOutlined />)
+        getItem(
+            <Link to={{ pathname: '/reference/Picture' }} state={{ board: '자료실', flag: 'Picture', title: '사진자료' }}>
+                사진자료
+            </Link>,
+            '54',
+            <FileTextOutlined />
+        )
     ]),
 
     getItem('회원관리', 'sub6', <AppstoreAddOutlined />, [

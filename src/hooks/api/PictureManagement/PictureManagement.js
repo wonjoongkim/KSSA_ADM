@@ -1,46 +1,41 @@
+/* eslint-disable */
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
-export const userManagement = createApi({
-    reducerPath: 'userManagement',
+export const pictureManagement = createApi({
+    reducerPath: 'pictureManagement',
     baseQuery: fetchBaseQuery({
         baseUrl: `${BASE_URL}`,
         prepareHeaders: (headers) => {
             const jwtToken = localStorage.getItem('userToken');
-
             if (jwtToken) {
                 headers.set('authorization', `Bearer ${jwtToken}`);
             }
-
             return headers;
         }
     }),
     endpoints: (builder) => ({
-        MemberList: builder.mutation({
+        // 사진자료 리스트
+        PictureList: builder.mutation({
             query: (body) => ({
-                url: 'Adm/Member_List',
+                url: 'Adm/Picture_List',
                 method: 'POST',
                 body: body
             })
         }),
-        MemberInsert: builder.mutation({
+        // 사진자료 수정
+        PictureUpdate: builder.mutation({
             query: (body) => ({
-                url: 'Adm/Member_Insert',
+                url: 'Adm/Picture_Update',
                 method: 'POST',
                 body: body
             })
         }),
-        MemberView: builder.mutation({
+        // 사진자료 삭제
+        PictureDelete: builder.mutation({
             query: (body) => ({
-                url: 'Adm/Member_View',
-                method: 'POST',
-                body: body
-            })
-        }),
-        MemberUpdate: builder.mutation({
-            query: (body) => ({
-                url: 'Adm/Member_Update',
+                url: 'Adm/Picture_Delete',
                 method: 'POST',
                 body: body
             })
@@ -48,4 +43,4 @@ export const userManagement = createApi({
     })
 });
 
-export const { useMemberListMutation, useMemberInsertMutation, useMemberViewMutation, useMemberUpdateMutation } = userManagement;
+export const { usePictureListMutation, usePictureUpdateMutation, usePictureDeleteMutation } = pictureManagement;

@@ -16,6 +16,7 @@ import { Editor } from '@toast-ui/react-editor';
 import { useDropzone } from 'react-dropzone';
 
 export const Write = () => {
+    const { v4: uuidv4 } = require('uuid'); // UUID 생성을 위한 라이브러리
     const location = useLocation();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
@@ -23,15 +24,16 @@ export const Write = () => {
     const [flagProp, setFlagProp] = useState(null); // 타겟 게시판 명
     const [titleProp, setTitleProp] = useState(null); // 타겟 게시판 타이틀
     const [formProp, setFormProp] = useState(null); // 타겟 게시판 등록/수정
+    const [FileKey, setFileKey] = useState(null); // 파일 Key 생성
     const editorRef = useRef(null);
     const [heightSize, setHeightSize] = useState(window.innerHeight);
 
     const [itemContainer, setItemContainer] = useState(null); // 항목 컨테이너
     const [fileContainer, setFileContainer] = useState(null); // 파일 컨테이너
-    const [command, setCommand] = useState('false'); // 파일 업로드 여부
-    const [uploadedFiles, setUploadedFiles] = useState([]); // 파일
-    const [selectedFile, setselectedFile] = useState([]);
 
+    // const [command, setCommand] = useState('false'); // 파일 업로드 여부
+    const [uploadedFiles, setUploadedFiles] = useState([]); // 파일
+    const [selectedFile, setSelectedFile] = useState([]);
     //=================================================================
     // Board 등록 Start
     const [BoardInsertApi] = useBoardInsertMutation();
@@ -40,7 +42,7 @@ export const Write = () => {
             Board_Type: flagProp,
             Subject: itemContainer?.Subject,
             Contents: itemContainer?.Contents,
-            FileKey: itemContainer?.FileKey,
+            FileKey: FileKey,
             InDate: itemContainer?.InDate
         });
         UploadResponse?.data?.RET_CODE === '0000'
@@ -48,9 +50,8 @@ export const Write = () => {
                   content: '등록 완료',
                   //   style: { top: 320 }
                   onOk() {
+                      handelFileUpload(selectedFile);
                       Lists();
-                      //       //   form.resetFields();
-                      //       //   props.SaveClose();
                   }
               })
             : Modal.error({
@@ -72,15 +73,17 @@ export const Write = () => {
     const handelFileUpload = async (filesToUpload) => {
         let formData = new FormData();
         Object.values(filesToUpload).forEach((fileData) => {
-            formData.append('files', fileData);
+            formData.append('files', fileData, encodeURIComponent(fileData.name));
         });
+        formData.append('FileKey', FileKey);
         const FileUploadResponse = await FileUpload(formData);
         FileUploadResponse?.data?.RET_CODE === '0000'
-            ? setItemContainer({ ...itemContainer, FileKey: FileUploadResponse?.data?.RET_DATA.FileKey })
+            ? setFileContainer(FileUploadResponse?.data?.RET_DATA)
             : Modal.error({
                   content: FileUploadResponse?.data?.RET_DESC,
                   style: { top: 320 }
               });
+        // return;
     };
     // 파일 업로드 처리 End
     //=================================================================
@@ -88,18 +91,22 @@ export const Write = () => {
     //=================================================================
     // 파일 삭제 처리 Start
     const [FileDelete] = useFileDeleteMutation();
-    const handelFileDelete = async (FileIdx, FileNm) => {
+    const handelFileDelete = async (index) => {
         const FileDeleteResponse = await FileDelete({
-            FileIdx: FileIdx,
-            FileNm: FileNm
+            FileNm: fileContainer[index].FileNm,
+            FileIdx: fileContainer[index].FileIdx
         });
-        FileDeleteResponse?.data?.RET_CODE === '0000'
-            ? setItemContainer({ ...itemContainer, FileKey: FileDeleteResponse?.data?.RET_DATA.FileKey })
-            : Modal.error({
-                  content: '파일 삭제 오류',
-                  style: { top: 320 },
-                  onOk() {}
-              });
+        if (FileDeleteResponse?.data?.RET_CODE === '0000') {
+            const updatedArray = [...fileContainer.slice(0, index), ...fileContainer.slice(index + 1)];
+            setFileContainer(updatedArray);
+        } else {
+            Modal.error({
+                content: '파일 삭제 오류',
+                style: { top: 320 },
+                onOk() {}
+            });
+        }
+        return;
     };
     // 파일 삭제 처리 End
     //=================================================================
@@ -107,7 +114,7 @@ export const Write = () => {
     //=================================================================
     // 파일 업로드 Start
     const handleDrop = (acceptedFiles) => {
-        const remainingSlots = 10 - uploadedFiles.length;
+        const remainingSlots = 20 - uploadedFiles.length;
         const filesToUpload = acceptedFiles.slice(0, remainingSlots);
         filesToUpload.forEach((file) => {
             // 파일 정보 및 base64 변환
@@ -125,10 +132,9 @@ export const Write = () => {
             };
             reader.readAsDataURL(file);
         });
-        setselectedFile(filesToUpload);
-        setCommand('true');
-        handelFileUpload(filesToUpload);
+        setSelectedFile((prevImages) => [...prevImages, ...filesToUpload]);
     };
+
     const {
         getRootProps: getRootProps,
         getInputProps: getInputProps,
@@ -138,11 +144,14 @@ export const Write = () => {
     });
 
     // 이미지 삭제
-    const handleImageDelete = (index, FileIdx, File_Nm) => {
+    const handleImageDelete = (index) => {
         const updatedFiles = [...uploadedFiles];
         updatedFiles.splice(index, 1);
         setUploadedFiles(updatedFiles);
-        handelFileDelete(FileIdx, File_Nm); // 업로드 파일 삭제
+
+        const selectedFiles = [...selectedFile];
+        selectedFiles.splice(index, 1);
+        setSelectedFile(selectedFiles);
     };
     // 이미지 업로드 End
     //=================================================================
@@ -169,7 +178,9 @@ export const Write = () => {
 
     // 목록 Start
     const Lists = () => {
-        navigate('/reference/List', { state: { board: boardProp, flag: flagProp, title: titleProp } });
+        flagProp === 'Picture'
+            ? navigate('/reference/Picture', { state: { board: boardProp, flag: flagProp, title: titleProp } })
+            : navigate('/reference/List', { state: { board: boardProp, flag: flagProp, title: titleProp } });
     };
     // 목록 End
 
@@ -189,6 +200,7 @@ export const Write = () => {
         setFlagProp(location.state.flag);
         setTitleProp(location.state.title);
         setFormProp(location.state.form);
+        setFileKey(uuidv4());
     }, [location.state]);
 
     return (
@@ -219,18 +231,31 @@ export const Write = () => {
                         <Col span={24} style={{ fontSize: '15px' }}>
                             <DatePicker placeholder="등록일" onChange={onChange} style={{ height: '55px', width: '100%' }} />
                         </Col>
-
                         <Col span={24} style={{ fontSize: '18px', fontWeight: '600' }}>
                             <Input
                                 size="large"
                                 placeholder="제목"
                                 prefix={<EditOutlined />}
                                 allowClear
-                                enterButton="Search"
                                 style={{ height: '55px' }}
                                 onChange={(e) => setItemContainer({ ...itemContainer, Subject: e.target.value })}
                             />
                         </Col>
+                        {flagProp === 'Picture' ? (
+                            <Col span={24} style={{ fontSize: '15px' }}>
+                                <Input
+                                    size="large"
+                                    placeholder="이수인원"
+                                    prefix={<EditOutlined />}
+                                    allowClear
+                                    enterButton="Search"
+                                    style={{ height: '55px' }}
+                                    onChange={(e) => setItemContainer({ ...itemContainer, Unit: e.target.value })}
+                                />
+                            </Col>
+                        ) : (
+                            ''
+                        )}
 
                         <Col span={24} style={{ fontSize: '15px' }}>
                             <Editor
@@ -239,7 +264,7 @@ export const Write = () => {
                                 initialEditType="wysiwyg"
                                 hideModeSwitch={false}
                                 width="100%"
-                                height="450px"
+                                height={flagProp === 'Picture' ? '150px' : '450px'}
                                 usageStatistics={false}
                                 useCommandShortcut={true}
                                 name="Contents"
@@ -254,7 +279,6 @@ export const Write = () => {
                                 language="ko-KR"
                             />
                         </Col>
-
                         <Col span={24} style={{ fontSize: '15px' }}>
                             <Space wrap>
                                 <Button
@@ -277,7 +301,7 @@ export const Write = () => {
                                     )}
                                 </Button>
                             </Space>
-                            {uploadedFiles.length > 0 ? (
+                            {uploadedFiles?.length > 0 ? (
                                 <>
                                     <Divider />
                                     <Space>
@@ -299,10 +323,7 @@ export const Write = () => {
                                                         name="Quest_answer"
                                                         type="primary"
                                                         icon={<DeleteOutlined />}
-                                                        // onClick={() => handleImageDelete(index, itemContainer.FileIdx, itemContainer.FilePath)}
-                                                        onClick={() =>
-                                                            handleImageDelete(index, '48', '8e62245f-d8fe-46d3-90eb-91e36dda792d.jpg')
-                                                        }
+                                                        onClick={() => handleImageDelete(index)}
                                                         style={{ marginRight: '6px' }}
                                                     >
                                                         삭제

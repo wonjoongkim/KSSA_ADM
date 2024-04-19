@@ -4,13 +4,58 @@ import { FloatButton, Breadcrumb, Spin, Table, Row, Col, Space, Button, Input, M
 import MainCard from 'components/MainCard';
 import { HomeOutlined, EditOutlined, SearchOutlined, ScissorOutlined, EditFilled, DeleteFilled } from '@ant-design/icons';
 import { useLocation, Link } from 'react-router-dom';
+import {
+    useMemberListMutation,
+    useMemberInsertMutation,
+    useMemberViewMutation,
+    useMemberUpdateMutation
+} from '../../hooks/api/UserManagement/UserManagement';
 
 export const Members = () => {
     const location = useLocation();
     const [selectedRowKeys, setSelectedRowKeys] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [member_ListData, setMember_ListData] = useState(null);
+    const [member_Total, setMember_Total] = useState('0');
+
     const [viewLoading, setViewLoading] = useState(false);
     const [viewModal, setViewModal] = useState(false);
+
+    const DataOptions = { year: 'numeric', month: '2-digit', day: '2-digit' };
+
+    // 회원 리스트 Start
+    const [MemberListApi] = useMemberListMutation();
+    const handleMemberList = async (search) => {
+        const MemberListResponse = await MemberListApi({
+            Member_Search: search
+        });
+        if (MemberListResponse?.data?.RET_CODE === '0000') {
+            console.log(MemberListResponse?.data?.RET_DATA[0].InDate);
+            setMember_ListData(
+                MemberListResponse?.data?.RET_DATA.map((d, i) => ({
+                    key: d.Idx,
+                    num: i + 1,
+                    idx: d.Idx,
+                    User_Nm: d.User_Nm,
+                    User_Id: d.User_Id,
+                    User_Phone: d.User_Phone,
+                    User_Email: d.User_Email,
+                    User_Type: d.User_Type,
+                    Visited: d.Visited,
+                    date: new Date(d.InDate).toLocaleTimeString('ko-KR', DataOptions).substring(0, 12)
+                }))
+            );
+            setMember_Total(
+                MemberListResponse?.data?.RET_DATA[0]?.Total === null || MemberListResponse?.data?.RET_DATA[0]?.Total === undefined
+                    ? '0'
+                    : MemberListResponse?.data?.RET_DATA[0]?.Total
+            );
+        } else {
+            setMember_ListData('');
+        }
+        setLoading(false);
+    };
+    // 회원 리스트 End
 
     // 임시 사용
     const [pages, setPages] = useState('1');
@@ -25,7 +70,7 @@ export const Members = () => {
         },
         {
             title: '이름',
-            dataIndex: 'UserNm',
+            dataIndex: 'User_Nm',
             render: (text, record) => (
                 <Button
                     type="text"
@@ -40,25 +85,37 @@ export const Members = () => {
         },
         {
             title: '아이디',
-            dataIndex: 'UserId',
+            dataIndex: 'User_Id',
+            width: '120px',
+            align: 'center'
+        },
+        {
+            title: 'HP',
+            dataIndex: 'User_Phone',
+            width: '120px',
+            align: 'center'
+        },
+        {
+            title: 'E-Mail',
+            dataIndex: 'User_Email',
             width: '120px',
             align: 'center'
         },
         {
             title: '분류',
-            dataIndex: 'UserType',
+            dataIndex: 'User_Type',
             width: '150px',
             align: 'center'
         },
         {
             title: '등록일',
-            dataIndex: 'InDate',
+            dataIndex: 'date',
             width: '150px',
             align: 'center'
         },
         {
             title: '접속횟수',
-            dataIndex: 'Connect',
+            dataIndex: 'Visited',
             width: '150px',
             align: 'center'
         },
@@ -85,17 +142,6 @@ export const Members = () => {
             align: 'center'
         }
     ];
-    const data = [];
-    for (let i = 1; i < 600; i++) {
-        data.push({
-            key: i,
-            UserNm: `${i === pages * pageSize ? '업체' : '교육생'} ${i}`,
-            UserId: `Member ${i}`,
-            UserType: `${i === pages * pageSize ? '업체' : '교육생'} ${i}`,
-            InDate: `2024-03-04`,
-            Connect: i
-        });
-    }
 
     // 총 개시물
     const showTotal = (total) => `Total ${total} items`;
@@ -125,10 +171,11 @@ export const Members = () => {
     };
 
     useEffect(() => {
-        const timerId = setTimeout(() => {
-            setLoading(false);
-        }, 300);
-        return () => clearTimeout(timerId);
+        handleMemberList('');
+        // const timerId = setTimeout(() => {
+        //     setLoading(false);
+        // }, 300);
+        // return () => clearTimeout(timerId);
     }, []);
 
     return (
@@ -186,7 +233,7 @@ export const Members = () => {
                     lg={{ span: 2, offset: 1 }}
                     style={{ fontSize: '14px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
                 >
-                    총 {data.length} 건
+                    총 {member_Total} 건
                 </Col>
             </Row>
 
@@ -236,7 +283,7 @@ export const Members = () => {
                             bordered
                             rowSelection={rowSelection}
                             columns={columns}
-                            dataSource={data}
+                            dataSource={member_ListData}
                             size="large"
                             pagination={{
                                 showQuickJumper: true,

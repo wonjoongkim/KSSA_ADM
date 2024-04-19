@@ -12,13 +12,7 @@ import {
     EditFilled,
     DeleteFilled
 } from '@ant-design/icons';
-import {
-    useBoardListMutation,
-    useBoardViewMutation,
-    useBoardInsertMutation,
-    useBoardUpdateMutation,
-    useBoardDeleteMutation
-} from '../../hooks/api/BoardManagement/BoardManagement';
+import { useBoardListMutation, useBoardViewMutation, useBoardDeleteMutation } from '../../hooks/api/BoardManagement/BoardManagement';
 
 import './Style.css';
 export const List = () => {
@@ -39,7 +33,7 @@ export const List = () => {
 
     const [board_Total, setBoard_Total] = useState('0'); // 게시판 리스트 Data
 
-    const DataOptions = { year: 'numeric', month: 'numeric', day: 'numeric' };
+    const DataOptions = { year: 'numeric', month: '2-digit', day: '2-digit' };
     // API Start
 
     // 게시물 리스트 Start
@@ -58,7 +52,7 @@ export const List = () => {
                     board_Type: d.Board_Type,
                     title: d.Subject,
                     visited: d.Visited,
-                    date: new Date(d.InDate).toLocaleTimeString('ko-KR', DataOptions).substring(0, 11)
+                    date: new Date(d.InDate).toLocaleTimeString('ko-KR', DataOptions).substring(0, 12)
                 }))
             );
             setBoard_Total(
@@ -221,22 +215,20 @@ export const List = () => {
         <>
             <MainCard
                 title={
-                    <>
-                        <Breadcrumb
-                            items={[
-                                {
-                                    href: '/',
-                                    title: <HomeOutlined />
-                                },
-                                {
-                                    title: boardProp
-                                },
-                                {
-                                    title: titleProp
-                                }
-                            ]}
-                        />
-                    </>
+                    <Breadcrumb
+                        items={[
+                            {
+                                href: '/',
+                                title: <HomeOutlined />
+                            },
+                            {
+                                title: `${boardProp}`
+                            },
+                            {
+                                title: `${titleProp}`
+                            }
+                        ]}
+                    />
                 }
             ></MainCard>
 
@@ -350,7 +342,7 @@ export const List = () => {
                 <Spin tip="Loading..." spinning={viewLoading}>
                     <Row
                         style={{
-                            border: '2px solid #aaaaaa',
+                            border: '2px solid #cfcfcf',
                             borderRadius: '12px',
                             marginTop: '20px',
                             height: '90px'
@@ -388,13 +380,13 @@ export const List = () => {
                         </Col>
                     </Row>
                     <Row
+                        gutter={[0, 8]}
                         style={{
-                            border: '2px solid #aaaaaa',
+                            border: '2px solid #cfcfcf',
                             borderRadius: '12px',
                             display: 'flex',
                             alignItems: 'center',
-                            padding: '0 20px',
-                            height: '90px'
+                            padding: '5px 20px'
                         }}
                     >
                         {board_FileData?.map((d, i) => (

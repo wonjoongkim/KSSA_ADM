@@ -1,26 +1,48 @@
 /* eslint-disable*/
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { FloatButton, Breadcrumb, Spin, Row, Col, Card, Input, Image, Divider, Pagination, Checkbox, Space, Button } from 'antd';
+import {
+    FloatButton,
+    Breadcrumb,
+    Spin,
+    Row,
+    Col,
+    Card,
+    Input,
+    Image,
+    Divider,
+    Pagination,
+    Checkbox,
+    Space,
+    Button,
+    Modal,
+    Tooltip
+} from 'antd';
 import MainCard from 'components/MainCard';
 import { HomeOutlined, EditFilled, DeleteFilled, ScissorOutlined } from '@ant-design/icons';
+import {
+    usePictureListMutation,
+    usePictureUpdateMutation,
+    usePictureDeleteMutation
+} from '../../hooks/api/PictureManagement/PictureManagement';
 import styled from 'styled-components';
 import './Style.css';
-import g1 from '../../assets/images/g1.png';
-import g2 from '../../assets/images/g2.png';
-import g3 from '../../assets/images/g3.png';
-import g4 from '../../assets/images/g4.png';
-import g5 from '../../assets/images/g5.png';
-import g6 from '../../assets/images/g6.png';
-import g7 from '../../assets/images/g7.png';
-import g8 from '../../assets/images/g8.png';
-import g9 from '../../assets/images/g9.png';
-import g10 from '../../assets/images/g10.png';
 
 export const Picture = () => {
+    const location = useLocation();
     const [selectedRowKeys, setSelectedRowKeys] = useState([]);
-    const [loading, setLoading] = useState(true); // 로딩 초기값
-    const [pages, setPages] = useState(8);
+    const [loading, setLoading] = useState(false);
+    const [pages, setPages] = useState(1);
+    const [currentPage, setCurrentPage] = useState(1); // 현재 페이지
+
+    const [boardProp, setBoardProp] = useState(null); // 타겟 타이틀 명
+    const [flagProp, setFlagProp] = useState(null); // 타겟 게시판 명
+    const [titleProp, setTitleProp] = useState(null); // 타겟 게시판 타이틀
+
+    const [picture_ListData, setPicture_ListData] = useState(null); // 게시판 리스트 Data
+    const [board_Search_Data, setBoard_Search_Data] = useState(''); // 게시판 검색 Data
+
+    const DataOptions = { year: 'numeric', month: '2-digit', day: '2-digit' };
 
     const StyledCheckbox = styled.div`
         .ant-checkbox .ant-checkbox-inner {
@@ -43,55 +65,34 @@ export const Picture = () => {
         }
     `;
 
-    const data = [
-        {
-            key: '1',
-            title: '항공경비 초기교육 1차',
-            date: '2023-10-31',
-            unit: '40',
-            images: [g4, g2, g3]
-        },
-        {
-            key: '2',
-            title: '항공경비 초기교육 2,3차',
-            date: '2023-10-30',
-            unit: '40',
-            images: [g6, g3, g4, g5]
-        },
-        {
-            key: '3',
-            title: '항공경비 초기교육 4,5차',
-            date: '2023-10-29',
-            unit: '40',
-            images: [g7, g4, g5]
-        },
-        {
-            key: '4',
-            title: '항공경비 초기교육 6차',
-            date: '2023-10-28',
-            unit: '40',
-            images: [g5, g3, g5]
-        },
-        {
-            key: '5',
-            title: '보안검색 초기교육 1차',
-            date: '2023-10-27',
-            unit: '40',
-            images: [g8, g5]
-        },
-        {
-            key: '6',
-            title: '항공경비 초기교육 2차',
-            date: '2023-10-26',
-            unit: '40',
-            images: [g1, g4]
+    // Picture 리스트 Start
+    const [PictureListApi] = usePictureListMutation();
+    const handlePictureList = async (flag, search) => {
+        const PictureListResponse = await PictureListApi({
+            Board_Type: flag,
+            Board_Search: search
+        });
+
+        if (PictureListResponse?.data?.RET_CODE === '0000') {
+            setPicture_ListData(
+                PictureListResponse?.data?.RET_DATA?.resultsWithFiles?.map((d) => ({
+                    key: d.Idx,
+                    title: d.Subject,
+                    date: new Date(d.InDate).toLocaleTimeString('ko-KR', DataOptions).substring(0, 12),
+                    unit: d.Unit,
+                    Images: d.Images
+                }))
+            );
+            setPages(
+                PictureListResponse?.data?.RET_DATA?.resultsWithFiles[0]?.Total === null ||
+                    PictureListResponse?.data?.RET_DATA?.resultsWithFiles[0]?.Total === undefined
+                    ? '0'
+                    : PictureListResponse?.data?.RET_DATA?.resultsWithFiles[0]?.Total
+            );
         }
-    ];
-    // const pages = 1; // 페이지당 표시할 데이터 수
-    const [currentPage, setCurrentPage] = useState(1); // 현재 페이지
-    const indexOfLastData = currentPage * pages; // 현재 페이지의 마지막 데이터 인덱스
-    const indexOfFirstData = indexOfLastData - pages; // 현재 페이지의 첫 데이터 인덱스
-    const currentData = data.slice(indexOfFirstData, indexOfLastData); // 현재 페이지에 표시할 데이터
+        setLoading(false);
+    };
+    // Picture 리스트 End
 
     const onPageChange = (page, pageSize) => {
         setCurrentPage(page);
@@ -104,7 +105,6 @@ export const Picture = () => {
 
     // 체크박스 Start
     const onSelectChange = (newSelectedRowKeys) => {
-        // console.log('selectedRowKeys changed: ', ...newSelectedRowKeys);
         if (selectedRowKeys.includes(newSelectedRowKeys)) {
             setSelectedRowKeys(selectedRowKeys.filter((selectedKey) => selectedKey !== newSelectedRowKeys));
         } else {
@@ -122,16 +122,24 @@ export const Picture = () => {
     const hasSelected = selectedRowKeys.length > 0;
 
     // 검색 Search
-    const onSearch = (value, _e, info) => console.log(value);
+    const onSearch = (value, _e, info) => {
+        // console.log(value);
+        setBoard_Search_Data(value);
+        handlePictureList(flagProp, value);
+    };
 
     useEffect(() => {
-        const timerId = setTimeout(() => {
-            setLoading(false);
-        }, 300);
-        return () => clearTimeout(timerId);
-    }, []);
+        setLoading(true);
+        setBoardProp(location.state.board);
+        setFlagProp(location.state.flag);
+        setTitleProp(location.state.title);
+        handlePictureList(location.state.flag, '');
+    }, [location.state]);
 
-    console.log(selectedRowKeys);
+    // console.log(selectedRowKeys);
+    // const indexOfLastData = currentPage * pages; // 현재 페이지의 마지막 데이터 인덱스
+    // const indexOfFirstData = indexOfLastData - pages; // 현재 페이지의 첫 데이터 인덱스
+    // const currentData = picture_ListData.slice(indexOfFirstData, indexOfLastData); // 현재 페이지에 표시할 데이터
 
     return (
         <>
@@ -187,7 +195,7 @@ export const Picture = () => {
                     lg={{ span: 2, offset: 1 }}
                     style={{ fontSize: '14px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
                 >
-                    총 {data.length} 건
+                    총 {pages} 건
                 </Col>
             </Row>
             <Spin tip="Loading..." spinning={loading}>
@@ -231,7 +239,7 @@ export const Picture = () => {
                 </Row>
 
                 <Row gutter={[34, 32]} stify="space-evenly" style={{ marginTop: '20px' }}>
-                    {currentData.map((d, i) => (
+                    {picture_ListData?.map((d, i) => (
                         <>
                             <Col key={i} xs={24} lg={6} style={{ textAlign: 'center' }}>
                                 <Card style={{ border: '2px solid #aac9f5', height: '430px' }} rowSelection={rowSelection}>
@@ -260,8 +268,8 @@ export const Picture = () => {
                                                     ></Checkbox>
                                                 </StyledCheckbox>
                                             </div>
-                                            <Image.PreviewGroup items={d.images}>
-                                                <Image src={d.images[0]} style={{ borderRadius: '5px', minHeight: '290px' }} />
+                                            <Image.PreviewGroup items={d?.Images?.map((img) => img.File_Path)}>
+                                                <Image src={d?.Images[0]?.File_Path} style={{ borderRadius: '5px', minHeight: '290px' }} />
                                             </Image.PreviewGroup>
                                             <div
                                                 style={{
@@ -299,7 +307,7 @@ export const Picture = () => {
                             pageSize={pages}
                             defaultCurrent={1}
                             current={currentPage}
-                            total={data.length}
+                            total={pages}
                             onChange={onPageChange}
                             onShowSizeChange={onPageSizeChange}
                         />

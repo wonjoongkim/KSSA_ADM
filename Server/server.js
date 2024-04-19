@@ -114,15 +114,14 @@ async function verifyPassword(password, hashedPassword) {
 //=============================================================
 // 업로드된 파일을 저장할 디렉토리 설정 / 미들웨어 Start
 const storage = multer.diskStorage({
-    dest: 'uploads/',
+    dest: 'public/uploads/',
     destination: function (req, file, cb) {
-        cb(null, 'uploads/');
+        cb(null, 'public/uploads/');
     },
     filename: function (req, file, cb) {
         const uniqueFileName = uuidv4(); // 고유한 파일 이름 생성
         const fileExtension = path.extname(file.originalname); // 파일 확장자 추출
         const fileName = `${uniqueFileName}${fileExtension}`; // 고유한 파일 이름에 확장자 추가
-        // 파일을 저장할 절대 경로를 설정합니다.
         cb(null, fileName);
     }
 });
@@ -136,23 +135,26 @@ const storage = multer.diskStorage({
 //#############################################################
 //####################    Common Start    #####################
 //#############################################################
-const upload = multer({ storage: storage }).array('files', 10); // 'files'는 클라이언트에서 전송한 필드명입니다.
-// app.post("/FileUpload", verifyBearerToken, async (req, res) => {
-app.post('/FileUpload', (req, res) => {
+
+const upload = multer({ storage: storage }).array('files', 20);
+app.post('/FileUpload', verifyBearerToken, async (req, res) => {
     upload(req, res, async (err) => {
         if (err) {
             console.error(err);
             return res.status(500).json({ message: '파일 업로드에 실패했습니다.' });
         }
+        const { FileKey } = req.body;
         let conn;
         try {
             conn = await pool.getConnection();
             const files = req.files;
-            const File_Key = uuidv4();
+            const File_Key = FileKey;
+            const insertedFiles = [];
             for (const file of files) {
+                // const Original_FileName = decodeURIComponent(file.originalname);
                 const Original_FileName = file.originalname;
-                const Save_FileName = encodeURIComponent(file.filename); // 파일명을 UTF-8로 인코딩합니다.
-                const File_Path = file.path;
+                const Save_FileName = file.filename;
+                // const File_Path = file.path;
                 const File_Ext = file.originalname.split('.').pop();
                 const File_Size = file.size;
                 const File_query =
@@ -161,13 +163,19 @@ app.post('/FileUpload', (req, res) => {
                     File_Key,
                     Original_FileName,
                     Save_FileName,
-                    `http://localhost:3001/${File_Path}`,
+                    `http://localhost:3001/uploads/${Save_FileName}`,
                     File_Ext,
                     File_Size
                 ]);
+                insertedFiles.push({
+                    FileKey: File_Key,
+                    FileNm: Save_FileName,
+                    FileOrignal: Original_FileName,
+                    FileIdx: Number(result.insertId)
+                });
             }
             res.json({
-                RET_DATA: { FileKey: File_Key },
+                RET_DATA: insertedFiles,
                 RET_DESC: '파일 업로드에 성공했습니다.',
                 RET_CODE: '0000'
             });
@@ -184,20 +192,21 @@ app.post('/FileUpload', (req, res) => {
 
 app.post('/FileDelete', verifyBearerToken, async (req, res) => {
     // app.post('/FileDelete', async (req, res) => {
-    const File_Idx = req.body.FileIdx;
-    const File_Nm = req.body.FileNm;
+    const FileNm = req.body.FileNm;
+    const FileIdx = req.body.FileIdx;
     let conn;
     try {
         conn = await pool.getConnection();
         // 파일을 디스크에서 삭제
-        fs.unlink(`uploads/${File_Nm}`, async (err) => {
+
+        fs.unlink(`public/uploads/${FileNm}`, async (err) => {
             if (err) {
                 console.error('파일 삭제 중 오류 발생:', err);
                 return res.status(500).json({ message: '파일 삭제 중 오류가 발생했습니다.' });
             }
             // 데이터베이스에서 파일 정보 삭제
             const deleteFileQuery = 'Delete From NKSSA_FileAttach Where Idx = ?';
-            await conn.query(deleteFileQuery, [File_Idx]);
+            await conn.query(deleteFileQuery, [FileIdx]);
 
             res.json({
                 RET_DATA: {},
@@ -362,17 +371,47 @@ app.post('/Adm/Adm_Insert', async (req, res) => {
 //=============================================================
 // 회원 List Start
 app.post('/Adm/Member_List', async (req, res) => {
+    const { Member_Search } = req.body;
     let conn;
     try {
         conn = await pool.getConnection();
-        const query =
-            ' Select Idx, User_Id, User_Pw, User_Type, Edu_Nm, Edu_Id, User_Nm, User_Phone, User_Email, User_Zip, User_Address, User_Address_Detail ' +
-            ' , Company_Nm, Company_Zip, Company_Address, Company_Address_Detail, Manager_Nm, Manager_Phone, Manager_Email, State, InDate ' +
-            ' From NKSSA_Members ';
-        const result = await conn.query(query, []);
+        let result;
+        if (Member_Search.length > 0) {
+            // 검색 조건 선택
+            const searchCondition = `
+                Where User_Nm LIKE ? 
+                OR User_Id LIKE ? 
+                OR User_Type LIKE ? 
+                OR InDate LIKE ? 
+            `;
+            const searchValue = Array(4).fill(`%${Member_Search}%`); // 모든 검색 조건에 검색어를 포함하는 LIKE 절을 설정합니다.
+            const query = `Select (
+                SELECT CAST(COUNT(Idx) AS UNSIGNED) 
+                FROM NKSSA_Members
+                (${searchCondition})
+            ) AS Total, Idx, User_Id, User_Type, User_Nm, User_Phone, User_Email, InDate, Visited From NKSSA_Members (${searchCondition})`;
+            result = await conn.query(query, [...searchValue]);
+        } else {
+            const query = `Select (
+                SELECT CAST(COUNT(Idx) AS UNSIGNED) 
+                FROM NKSSA_Members
+            ) AS Total, Idx, User_Id, User_Type, User_Nm, User_Phone, User_Email, InDate, Visited From NKSSA_Members`;
+            result = await conn.query(query);
+        }
 
+        const serializedResult = result.map((row) => ({
+            Total: String(row.Total),
+            Idx: row.Idx,
+            User_Nm: row.User_Nm,
+            User_Id: row.User_Id,
+            User_Phone: row.User_Phone,
+            User_Email: row.User_Email,
+            User_Type: row.User_Type,
+            InDate: row.InDate,
+            Visited: row.Visited
+        }));
         res.json({
-            RET_DATA: result,
+            RET_DATA: serializedResult,
             RET_CODE: '0000'
         });
     } catch (err) {
@@ -620,19 +659,20 @@ app.post('/Adm/Board_Delete', verifyBearerToken, async (req, res) => {
                 const File_N = `SELECT Save_FileName FROM NKSSA_FileAttach WHERE File_Key = '${Result_Q[0].File_Key}'`;
                 const Result_N = await conn.query(File_N);
 
-                // NKSSA_FileAttach 테이블에서 해당 File_Key에 대한 파일을 삭제
-                const File_D = `DELETE FROM NKSSA_FileAttach WHERE File_Key = '${Result_Q[0].File_Key}'`;
-                await conn.query(File_D);
+                if (Result_N.length > 0) {
+                    const File_D = `DELETE FROM NKSSA_FileAttach WHERE File_Key = '${Result_Q[0].File_Key}'`;
+                    await conn.query(File_D);
 
-                fs.unlink(`uploads/${Result_N[0].Save_FileName}`, async (err) => {
-                    if (err) {
-                        console.error('파일 삭제 중 오류 발생:', err);
-                        return res.status(500).json({ message: '파일 삭제 중 오류가 발생했습니다.' });
-                    }
-                    // 데이터베이스에서 파일 정보 삭제
-                    const deleteFileQuery = `Delete From NKSSA_FileAttach Where File_Key = '${Result_Q[0].File_Key}'`;
-                    await conn.query(deleteFileQuery);
-                });
+                    fs.unlink(`uploads/${Result_N[0].Save_FileName}`, async (err) => {
+                        if (err) {
+                            console.error('파일 삭제 중 오류 발생:', err);
+                            return res.status(500).json({ message: '파일 삭제 중 오류가 발생했습니다.' });
+                        }
+                        // 데이터베이스에서 파일 정보 삭제
+                        const deleteFileQuery = `Delete From NKSSA_FileAttach Where File_Key = '${Result_Q[0].File_Key}'`;
+                        await conn.query(deleteFileQuery);
+                    });
+                }
             }
 
             // NKSSA_Board 테이블에서 해당 Idx의 데이터를 삭제
@@ -657,6 +697,174 @@ app.post('/Adm/Board_Delete', verifyBearerToken, async (req, res) => {
     }
 });
 // Board 삭제 End
+//=============================================================
+
+//=============================================================
+// Picture List Start
+app.post('/Adm/Picture_List', async (req, res) => {
+    const { Board_Type, Board_Search } = req.body;
+    let conn;
+
+    const query = `Select (
+        SELECT CAST(COUNT(Idx) AS UNSIGNED) 
+        FROM NKSSA_Board 
+        WHERE Board_Type = ?
+    ) AS Total, Idx, Board_Type, Subject, Contents, File_Key, Visited, InDate, Unit From NKSSA_Board Where Board_Type = ? And State = '0' And Subject like ?`;
+
+    try {
+        conn = await pool.getConnection();
+        const result = await conn.query(query, [Board_Type, Board_Type, `%${Board_Search}%`]); // 게시물 조회
+
+        const file_query = 'Select File_Path From NKSSA_FileAttach Where File_Key = ?'; // 파일 조회
+
+        // 결과를 담을 배열 선언
+        const resultsWithFiles = [];
+
+        for (const row of result) {
+            const file_result = await conn.query(file_query, row.File_Key);
+
+            resultsWithFiles.push({
+                ...row,
+                Total: String(row.Total),
+                Idx: row.Idx,
+                Board_Type: row.Board_Type,
+                Subject: row.Subject,
+                Contents: row.Contents,
+                File_Key: row.File_Key,
+                Visited: row.Visited,
+                InDate: row.InDate,
+                Unit: row.Unit,
+                Images: file_result
+            });
+        }
+        res.json({
+            RET_DATA: { resultsWithFiles },
+            RET_CODE: '0000'
+        });
+    } catch (err) {
+        console.error('Error executing MariaDB query:', err);
+        res.json({
+            RET_DATA: null,
+            RET_DESC: `조회 실패_${err}`,
+            RET_CODE: '1000'
+        });
+    } finally {
+        if (conn) return conn.end();
+    }
+});
+// Picture List End
+//=============================================================
+
+//=============================================================
+// Picture 등록 Start
+app.post('/Adm/Picture_Insert', verifyBearerToken, async (req, res) => {
+    const { Board_Type, Subject, Contents, FileKey, InDate, Unit } = req.body;
+    let conn;
+    try {
+        conn = await pool.getConnection();
+        const query = 'INSERT INTO NKSSA_Board (Board_Type, Subject, Contents, File_Key, InDate, Unit) VALUES (?, ?, ?, ?, ?, ?)';
+        const result = await conn.query(query, [Board_Type, Subject, Contents, FileKey, InDate, Unit]);
+        res.json({
+            RET_DATA: null,
+            RET_DESC: '저장 완료',
+            RET_CODE: '0000'
+        });
+    } catch (err) {
+        console.error('Error executing MariaDB query:', err);
+        res.json({
+            RET_DATA: null,
+            RET_DESC: `저장 실패_${err}`,
+            RET_CODE: '1000'
+        });
+    } finally {
+        if (conn) conn.release();
+    }
+});
+// Picture 등록 End
+//=============================================================
+
+//=============================================================
+// Picture 수정 Start
+app.post('/Adm/Picture_Update', verifyBearerToken, async (req, res) => {
+    const { Subject, Contents, State, Unit, Idx, Board_Type } = req.body;
+    let conn;
+    try {
+        conn = await pool.getConnection();
+        const query = 'Update NKSSA_Board set Subject = ?, Contents = ?, State = ?, Unit = ? where Idx = ? and Board_Type = ?';
+        const result = await conn.query(query, [Subject, Contents, State, Unit, Idx, Board_Type]);
+        res.json({
+            RET_DATA: null,
+            RET_DESC: '수정 완료',
+            RET_CODE: '0000'
+        });
+    } catch (err) {
+        console.error('Error executing MariaDB query:', err);
+        res.json({
+            RET_DATA: null,
+            RET_DESC: `수정 실패_${err}`,
+            RET_CODE: '1000'
+        });
+    } finally {
+        if (conn) conn.release();
+    }
+});
+// Picture 수정 End
+//=============================================================
+
+//=============================================================
+// Picture 삭제 Start
+app.post('/Adm/Picture_Delete', verifyBearerToken, async (req, res) => {
+    const { Idx } = req.body;
+    let conn;
+    try {
+        conn = await pool.getConnection();
+        for (const idx of Idx) {
+            // NKSSA_Board 테이블에서 해당 Idx의 File_Key를 가져옴
+            const File_Q = `SELECT File_Key FROM NKSSA_Board WHERE Idx = ${idx}`;
+            const Result_Q = await conn.query(File_Q);
+
+            if (Result_Q.length > 0) {
+                const File_N = `SELECT Save_FileName FROM NKSSA_FileAttach WHERE File_Key = '${Result_Q[0].File_Key}'`;
+                const Result_N = await conn.query(File_N);
+
+                if (Result_N.length > 0) {
+                    const File_D = `DELETE FROM NKSSA_FileAttach WHERE File_Key = '${Result_Q[0].File_Key}'`;
+                    await conn.query(File_D);
+
+                    fs.unlink(`uploads/${Result_N[0].Save_FileName}`, async (err) => {
+                        if (err) {
+                            console.error('파일 삭제 중 오류 발생:', err);
+                            return res.status(500).json({ message: '파일 삭제 중 오류가 발생했습니다.' });
+                        }
+                        // 데이터베이스에서 파일 정보 삭제
+                        const deleteFileQuery = `Delete From NKSSA_FileAttach Where File_Key = '${Result_Q[0].File_Key}'`;
+                        await conn.query(deleteFileQuery);
+                    });
+                }
+            }
+
+            // NKSSA_Board 테이블에서 해당 Idx의 데이터를 삭제
+            const query = `DELETE FROM NKSSA_Board WHERE Idx = ${idx}`;
+            await conn.query(query);
+        }
+
+        res.json({
+            RET_DATA: null,
+            RET_DESC: '삭제 완료',
+            RET_CODE: '0000'
+        });
+    } catch (err) {
+        console.error('Error executing MariaDB query:', err);
+        res.json({
+            RET_DATA: null,
+            RET_DESC: `삭제 실패_${err}`,
+            RET_CODE: '1000'
+        });
+    } finally {
+        if (conn) conn.release();
+    }
+});
+// Picture 삭제 End
 //=============================================================
 
 //=============================================================
