@@ -8,9 +8,9 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const multer = require('multer');
 const path = require('path');
-const publicPath = path.join(__dirname, 'upload');
+const publicPath = path.join(__dirname, 'public/uploads/');
 const { v4: uuidv4 } = require('uuid'); // UUID 생성을 위한 라이브러리
-
+const mime = require('mime-types');
 //#############################################################
 //###################    Setting Start   ######################
 //#############################################################
@@ -192,24 +192,27 @@ app.post('/FileUpload', verifyBearerToken, async (req, res) => {
 
 app.post('/FileDelete', verifyBearerToken, async (req, res) => {
     // app.post('/FileDelete', async (req, res) => {
-    const FileNm = req.body.FileNm;
-    const FileIdx = req.body.FileIdx;
+    const File_Key = req.body.File_Key;
+    const Save_FileName = req.body.Save_FileName;
     let conn;
     try {
         conn = await pool.getConnection();
         // 파일을 디스크에서 삭제
 
-        fs.unlink(`public/uploads/${FileNm}`, async (err) => {
+        fs.unlink(`public/uploads/${Save_FileName}`, async (err) => {
             if (err) {
                 console.error('파일 삭제 중 오류 발생:', err);
                 return res.status(500).json({ message: '파일 삭제 중 오류가 발생했습니다.' });
             }
             // 데이터베이스에서 파일 정보 삭제
-            const deleteFileQuery = 'Delete From NKSSA_FileAttach Where Idx = ?';
-            await conn.query(deleteFileQuery, [FileIdx]);
+            const deleteFileQuery = 'Delete From NKSSA_FileAttach Where Save_FileName = ?';
+            await conn.query(deleteFileQuery, [Save_FileName]);
 
+            const deleteFileSelect =
+                'Select File_Key, Original_FileName, Save_FileName, File_Path, File_Ext, File_Size From NKSSA_FileAttach Where File_Key = ?';
+            const file_result = await conn.query(deleteFileSelect, [File_Key]);
             res.json({
-                RET_DATA: {},
+                RET_DATA: file_result,
                 RET_DESC: '파일삭제 성공',
                 RET_CODE: '0000'
             });
@@ -223,6 +226,47 @@ app.post('/FileDelete', verifyBearerToken, async (req, res) => {
         });
     } finally {
         if (conn) return conn.end();
+    }
+});
+
+// 다운로드 API
+app.post('/FileDownLoad', verifyBearerToken, (req, res) => {
+    const fileName = req.body.fileName;
+    const filePath = path.join(__dirname, '../public/uploads/', fileName); // 파일이 저장된 경로로 변경
+
+    // 파일이 존재하는지 확인
+    if (fs.existsSync(filePath)) {
+        const mimeType = mime.lookup(filePath); // 파일의 MIME 유형 가져오기
+        if (mimeType) {
+            res.setHeader('Content-Type', mimeType); // MIME 유형 설정
+        }
+
+        // 파일이 존재하면 다운로드 시작
+        res.download(filePath, fileName, (err) => {
+            if (err) {
+                console.error('파일 다운로드 중 오류 발생:', err);
+                res.status(500).json({ error: '파일을 다운로드하는 동안 오류가 발생했습니다.' });
+            }
+        });
+    } else {
+        // 파일이 존재하지 않으면 404 에러 반환
+        res.status(404).json({ error: '파일을 찾을 수 없습니다.' });
+    }
+});
+
+// 미리보기 API
+app.post('/FilePreView', (req, res) => {
+    const fileName = req.body.fileName;
+    // const filePath = path.join(__dirname, '../public/uploads/', fileName); // 파일이 저장된 경로로 변경
+    const filePath = path.join(fileName); // 파일이 저장된 경로로 변경
+
+    console.log(filePath);
+    if (fs.existsSync(filePath)) {
+        const fileStream = fs.createReadStream(filePath);
+        fileStream.pipe(res);
+    } else {
+        // 파일이 존재하지 않으면 404 에러 반환
+        res.status(404).json({ error: '파일을 찾을 수 없습니다.' });
     }
 });
 //#############################################################
@@ -523,7 +567,7 @@ app.post('/Adm/Board_List', async (req, res) => {
             SELECT CAST(COUNT(Idx) AS UNSIGNED) 
             FROM NKSSA_Board 
             WHERE Board_Type = ?
-        ) AS Total, Idx, Board_Type, Subject, Contents, File_Key, Visited, InDate From NKSSA_Board Where Board_Type = ? And State = '0' And Subject like ?`;
+        ) AS Total, Idx, Board_Type, Subject, Contents, File_Key, Visited, State, InDate From NKSSA_Board Where Board_Type = ? And Subject like ?`;
         const result = await conn.query(query, [Board_Type, Board_Type, `%${Board_Search}%`]);
         const serializedResult = result.map((row) => ({
             Total: String(row.Total),
@@ -533,6 +577,7 @@ app.post('/Adm/Board_List', async (req, res) => {
             Contents: row.Contents,
             File_Key: row.File_Key,
             Visited: row.Visited,
+            State: row.State,
             InDate: row.InDate
         }));
 
@@ -562,7 +607,8 @@ app.post('/Adm/Board_View', async (req, res) => {
     try {
         conn = await pool.getConnection();
         // 게시물 조회
-        const query = 'Select Board_Type, Subject, Contents, File_Key, Visited, InDate From NKSSA_Board Where Board_Type = ? And Idx = ?';
+        const query =
+            'Select Board_Type, Subject, Contents, File_Key, Visited, State, InDate From NKSSA_Board Where Board_Type = ? And Idx = ?';
         const result = await conn.query(query, [Board_Type, Idx]);
 
         // 파일 조회
@@ -618,10 +664,13 @@ app.post('/Adm/Board_Insert', verifyBearerToken, async (req, res) => {
 //=============================================================
 // Board 수정 Start
 app.post('/Adm/Board_Update', verifyBearerToken, async (req, res) => {
+    // const { Subject, Contents, InDate, State, Idx, Board_Type } = req.body;
     const { Subject, Contents, State, Idx, Board_Type } = req.body;
     let conn;
     try {
         conn = await pool.getConnection();
+        // const query = 'Update NKSSA_Board set Subject = ?, Contents = ?, InDate = ?, State = ? where Idx = ? and Board_Type = ?';
+        // const result = await conn.query(query, [Subject, Contents, InDate + ' 23:59:59.000', State, Idx, Board_Type]);
         const query = 'Update NKSSA_Board set Subject = ?, Contents = ?, State = ? where Idx = ? and Board_Type = ?';
         const result = await conn.query(query, [Subject, Contents, State, Idx, Board_Type]);
         res.json({

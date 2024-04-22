@@ -16,3 +16,18 @@
     width: 20px;
     height: 20px;
 }
+
+.custom-switch {
+    width: 130px;
+    height: 35px;
+    padding: 7px 0;
+}
+
+.custom-switch .ant-switch-handle {
+    top: 25%;
+    left: 10px;
+}
+.custom-switch .ant-switch-handle::before {
+    /* transform: translateY(-50%); */
+    transform: translateX(-20%);
+}

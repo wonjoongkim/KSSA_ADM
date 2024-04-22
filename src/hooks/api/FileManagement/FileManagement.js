@@ -24,14 +24,6 @@ export const fileManagement = createApi({
                 body: body
             })
         }),
-        // fileDown: builder.mutation({
-        //     query: ({ atchFileId, fileSn }) => ({
-        //         url: `adm/file/fileDown?atchFileId=${atchFileId}&fileSn=${fileSn}`,
-        //         method: 'GET',
-        //         contentType: 'multipart/form-data',
-        //         responseType: 'blob'
-        //     })
-        // }),
         FileUpload: builder.mutation({
             query: (body) => ({
                 url: 'FileUpload',
@@ -39,12 +31,24 @@ export const fileManagement = createApi({
                 body: body,
                 contentType: 'multipart/form-data'
             })
+        }),
+        // 파일 다운로드
+        FileDownLoad: builder.mutation({
+            query: (body) => ({
+                url: 'FileDownLoad',
+                method: 'POST',
+                body: body
+            })
+        }),
+        // 파일 미리보기
+        FilePreView: builder.mutation({
+            query: (body) => ({
+                url: 'FilePreView',
+                method: 'POST',
+                body: body
+            })
         })
     })
 });
 
-export const {
-    useFileDeleteMutation,
-    // useFileDownMutation,
-    useFileUploadMutation
-} = fileManagement;
+export const { useFileDeleteMutation, useFileUploadMutation, useFileDownLoadMutation, useFilePreViewMutation } = fileManagement;

@@ -177,11 +177,11 @@ export const List = () => {
         {
             title: '수정',
             dataIndex: 'edit',
-            render: (text, record) => (
+            render: (text, { idx }) => (
                 <Space>
                     <Link
                         to={{ pathname: '/reference/Write' }}
-                        state={{ board: boardProp, flag: flagProp, title: titleProp, form: 'Edit' }}
+                        state={{ board: boardProp, flag: flagProp, title: titleProp, form: 'Edit', Idx: idx }}
                     >
                         <Button
                             icon={<ScissorOutlined />}

@@ -27,7 +27,7 @@ export const List = () => {
     const [titleProp, setTitleProp] = useState(null); // 타겟 게시판 타이틀
     const [board_ListData, setBoard_ListData] = useState(null); // 게시판 리스트 Data
     const [board_ViewData, setBoard_ViewData] = useState(null); // 게시판 상세정보 Data
-    const [board_FileData, setBoard_FileData] = useState(null); // 게시판 파일 Data
+    const [fileContainer, setFileContainer] = useState(null); // 게시판 파일 Data
 
     const [board_Search_Data, setBoard_Search_Data] = useState(''); // 게시판 검색 Data
 
@@ -81,7 +81,7 @@ export const List = () => {
                 Contents: BoardViewResponse?.data?.RET_DATA?.result[0].Contents,
                 Date: BoardViewResponse?.data?.RET_DATA?.result[0].InDate
             });
-            setBoard_FileData(BoardViewResponse?.data?.RET_DATA?.file_result);
+            setFileContainer(BoardViewResponse?.data?.RET_DATA?.file_result);
         } else {
             setBoard_ViewData('');
         }
@@ -177,9 +177,12 @@ export const List = () => {
         {
             title: '수정',
             dataIndex: 'edit',
-            render: (text, record) => (
+            render: (text, { idx }) => (
                 <Space>
-                    <Link to={{ pathname: '/notice/Write' }} state={{ board: boardProp, flag: flagProp, title: titleProp, form: 'Edit' }}>
+                    <Link
+                        to={{ pathname: '/notice/Write' }}
+                        state={{ board: boardProp, flag: flagProp, title: titleProp, form: 'Edit', Idx: idx }}
+                    >
                         <Button
                             icon={<ScissorOutlined />}
                             type="primary"
@@ -389,7 +392,7 @@ export const List = () => {
                             padding: '5px 20px'
                         }}
                     >
-                        {board_FileData?.map((d, i) => (
+                        {fileContainer?.map((d, i) => (
                             <>
                                 <Col xs={11} lg={14} style={{ display: 'flex', alignItems: 'center', justifyContent: 'start' }}>
                                     <a href="#">
