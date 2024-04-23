@@ -100,7 +100,7 @@ const items = [
 
     getItem('회원관리', 'sub6', <AppstoreAddOutlined />, [
         getItem(<Link to="/members/Members">회원 리스트</Link>, '61', <FileTextOutlined />),
-        getItem(<Link to="/members/Student">교육생 연동 리스트</Link>, '62', <FileTextOutlined />)
+        getItem(<Link to="/members/Student">교육 신청 리스트</Link>, '62', <FileTextOutlined />)
     ]),
 
     getItem('환경설정', 'sub7', <AppstoreAddOutlined />, [

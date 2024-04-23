@@ -64,8 +64,8 @@ export const Members = () => {
     const columns = [
         {
             title: 'No',
-            dataIndex: 'key',
-            width: '80px',
+            dataIndex: 'num',
+            width: '100px',
             align: 'center'
         },
         {
@@ -76,7 +76,6 @@ export const Members = () => {
                     type="text"
                     onClick={() => {
                         setViewModal(true);
-                        // setViewLoading(true);
                     }}
                 >
                     {text}
@@ -86,37 +85,35 @@ export const Members = () => {
         {
             title: '아이디',
             dataIndex: 'User_Id',
-            width: '120px',
             align: 'center'
         },
         {
             title: 'HP',
             dataIndex: 'User_Phone',
-            width: '120px',
             align: 'center'
         },
         {
             title: 'E-Mail',
             dataIndex: 'User_Email',
-            width: '120px',
             align: 'center'
         },
         {
             title: '분류',
             dataIndex: 'User_Type',
-            width: '150px',
-            align: 'center'
+            width: '130px',
+            align: 'center',
+            render: (_, { User_Type }) => (User_Type === 'T' ? '교육생' : User_Type === 'C' ? '업체' : User_Type === 'A' ? '협회' : '')
         },
         {
             title: '등록일',
             dataIndex: 'date',
-            width: '150px',
+            width: '180px',
             align: 'center'
         },
         {
             title: '접속횟수',
             dataIndex: 'Visited',
-            width: '150px',
+            width: '120px',
             align: 'center'
         },
         {
@@ -138,7 +135,7 @@ export const Members = () => {
                     </Link>
                 </Space>
             ),
-            width: '100px',
+            width: '120px',
             align: 'center'
         }
     ];
@@ -162,7 +159,10 @@ export const Members = () => {
     const hasSelected = selectedRowKeys.length > 0;
 
     // 검색 Search
-    const onSearch = (value, _e, info) => console.log(value);
+    const onSearch = (value, _e, info) => {
+        console.log(value);
+        handleMemberList(value);
+    };
 
     const onShowSizeChange = (current, pageSize) => {
         setPages(current);
@@ -172,10 +172,7 @@ export const Members = () => {
 
     useEffect(() => {
         handleMemberList('');
-        // const timerId = setTimeout(() => {
-        //     setLoading(false);
-        // }, 300);
-        // return () => clearTimeout(timerId);
+        setLoading(true);
     }, []);
 
     return (
@@ -221,7 +218,7 @@ export const Members = () => {
                 </Col>
                 <Col xs={{ span: 10, offset: 0 }} lg={{ span: 16, offset: 0 }}>
                     <Input.Search
-                        placeholder="※ 통합 검색 (차수명, 차수, 교육기간)"
+                        placeholder="※ 통합 검색 (이름, 아이디, HP, E-Mail, 분류, 등록일)"
                         onSearch={onSearch}
                         allowClear
                         enterButton

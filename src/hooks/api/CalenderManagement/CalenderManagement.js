@@ -17,9 +17,9 @@ export const calenderManagement = createApi({
     }),
     endpoints: (builder) => ({
         // Calender List (리스트)
-        CalenderList: builder.mutation({
+        CalenderSchedule: builder.mutation({
             query: (body) => ({
-                url: '/Adm/Calender_List',
+                url: '/Adm/Calender_Schedule',
                 method: 'POST',
                 body: body
             })
@@ -64,7 +64,7 @@ export const calenderManagement = createApi({
 });
 
 export const {
-    useCalenderListMutation,
+    useCalenderScheduleMutation,
     useCalenderViewMutation,
     useCalenderInsertMutation,
     useCalenderUpdateMutation,

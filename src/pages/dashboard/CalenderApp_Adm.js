@@ -10,7 +10,7 @@ import { Card, Space, Row, Col, Modal, Button, Input, Divider, DatePicker } from
 import interactionPlugin, { Draggable } from '@fullcalendar/interaction'; // 이 부분을 수정
 
 // API Hooks Start
-import { useCalenderListMutation, useCalenderViewMutation } from '../../hooks/api/CalenderManagement/CalenderManagement';
+import { useCalenderScheduleMutation, useCalenderViewMutation } from '../../hooks/api/CalenderManagement/CalenderManagement';
 // API Hooks End
 
 import { Calender_Add } from './Calender_Add';
@@ -45,13 +45,13 @@ const CalenderApp_Adm = () => {
     const formattedDate = `${year}-${formattedMonth}-${formattedDay}`;
 
     // ==================================================================================================
-    // 교육일정 정보 (Calender List)
-    const [CalenderList] = useCalenderListMutation();
-    const handelCalenderList = async () => {
-        const CalenderListResponse = await CalenderList({});
-        CalenderListResponse?.data?.RET_CODE === '0000'
+    // 교육일정 정보 (Calender Schedule)
+    const [CalenderScheduleApi] = useCalenderScheduleMutation();
+    const handelCalenderSchedule = async () => {
+        const CalenderScheduleResponse = await CalenderScheduleApi({});
+        CalenderScheduleResponse?.data?.RET_CODE === '0000'
             ? setEventsListContainer(
-                  CalenderListResponse?.data?.RET_DATA.map((e) => ({
+                  CalenderScheduleResponse?.data?.RET_DATA.map((e) => ({
                       id: e.Idx,
                       title: e.Edu_Nm,
                       start: e.Edu_Date_Start,
@@ -185,7 +185,6 @@ const CalenderApp_Adm = () => {
                 center: 'title',
                 right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
             },
-            width: '100%',
             height: '850px',
             // defaultView: 'agendaDay',
             initialDate: formattedDate,
@@ -272,7 +271,7 @@ const CalenderApp_Adm = () => {
     // 이벤트 추가 모달 닫기
     const handleEventClickModalAdd_Close = () => {
         setEventClickModalAdd(false);
-        handelCalenderList();
+        handelCalenderSchedule();
     };
 
     // 이벤트 상세정보 모달 열기
@@ -288,7 +287,7 @@ const CalenderApp_Adm = () => {
     // 이벤트 상세정보 수정 모달 닫기
     const handleEventClickModalInfo_Edit = () => {
         setEventClickModalInfo(false);
-        handelCalenderList();
+        handelCalenderSchedule();
     };
 
     // 이벤트 취소 모달 열기
@@ -299,11 +298,11 @@ const CalenderApp_Adm = () => {
     // 이벤트 삭제 모달 닫기
     const handleEventDeleteModal_Close = () => {
         setEventClickModalAdd(false);
-        handelCalenderList();
+        handelCalenderSchedule();
     };
 
     useEffect(() => {
-        handelCalenderList();
+        handelCalenderSchedule();
     }, []);
 
     return (

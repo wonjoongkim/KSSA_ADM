@@ -363,7 +363,7 @@ export const Write = () => {
                         <Col span={24} style={{ fontSize: '15px' }}>
                             <Switch
                                 className="custom-switch"
-                                checked={itemContainer?.State === '1' ? false : true}
+                                checked={itemContainer?.State === 1 ? false : true}
                                 checkedChildren={
                                     <span>
                                         {' '}

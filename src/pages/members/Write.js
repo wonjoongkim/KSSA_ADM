@@ -1,7 +1,7 @@
 /* eslint-disable*/
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { FloatButton, Breadcrumb, Spin, Card, Row, Col, DatePicker, Input, Button, Select, Divider, Space } from 'antd';
+import { FloatButton, Breadcrumb, Spin, Card, Row, Col, DatePicker, Input, Button, Select, Divider, Space, Switch } from 'antd';
 import MainCard from 'components/MainCard';
 import {
     HomeOutlined,
@@ -13,7 +13,9 @@ import {
     SearchOutlined,
     MobileOutlined,
     MailOutlined,
-    EnvironmentOutlined
+    EnvironmentOutlined,
+    CheckOutlined,
+    CloseOutlined
 } from '@ant-design/icons';
 import '@toast-ui/editor/dist/i18n/ko-kr';
 import '@toast-ui/editor/dist/toastui-editor.css';
@@ -56,25 +58,17 @@ export const Write = () => {
     const filterOption = (input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
     // 분류 End
 
-    const editor_onChange = (html) => {
-        // props.editor_onChange(html);
-        console.log(html);
+    const SwitchChange = (e) => {
+        e === false
+            ? setItemContainer({
+                  ...itemContainer,
+                  State: 1
+              })
+            : setItemContainer({
+                  ...itemContainer,
+                  State: 0
+              });
     };
-
-    const handleResize = () => {
-        setHeightSize(window.innerHeight);
-    };
-
-    useEffect(() => {
-        window.addEventListener('resize', handleResize);
-        const timerId = setTimeout(() => {
-            setLoading(false);
-        }, 300);
-        return () => {
-            clearTimeout(timerId);
-            window.removeEventListener('resize', handleResize);
-        };
-    }, []);
 
     useEffect(() => {
         setFormProp(location.state.form);
@@ -95,7 +89,7 @@ export const Write = () => {
                                     title: '회원관리'
                                 },
                                 {
-                                    title: '회원리스트'
+                                    title: '회원등록'
                                 }
                             ]}
                         />
@@ -185,13 +179,26 @@ export const Write = () => {
                                 style={{ width: '100%' }}
                             />
                         </Col>
-                        <Col xs={24} xl={12}>
-                            <Input.Password
-                                prefix={<LockOutlined style={{ color: '#777' }} />}
-                                iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
-                                size="large"
-                                placeholder="사용여부"
-                                style={{ height: '55px' }}
+                        <Col xs={24} xl={12} style={{ display: 'flex', alignItems: 'center' }}>
+                            <Switch
+                                className="custom-switch"
+                                checked={itemContainer?.State === 1 ? false : true}
+                                checkedChildren={
+                                    <span>
+                                        {' '}
+                                        <CheckOutlined /> 사용
+                                    </span>
+                                }
+                                unCheckedChildren={
+                                    <span>
+                                        {' '}
+                                        <CloseOutlined /> 미사용
+                                    </span>
+                                }
+                                name="State"
+                                onChange={(e) => SwitchChange(e)}
+                                plugins={[colorSyntax]}
+                                language="ko-KR"
                             />
                         </Col>
                         {/* 교육생 등록 폼 Start */}

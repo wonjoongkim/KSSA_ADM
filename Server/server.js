@@ -414,35 +414,16 @@ app.post('/Adm/Adm_Insert', async (req, res) => {
 
 //=============================================================
 // 회원 List Start
-app.post('/Adm/Member_List', async (req, res) => {
+app.post('/Adm/Member_List', verifyBearerToken, async (req, res) => {
     const { Member_Search } = req.body;
     let conn;
     try {
         conn = await pool.getConnection();
-        let result;
-        if (Member_Search.length > 0) {
-            // 검색 조건 선택
-            const searchCondition = `
-                Where User_Nm LIKE ? 
-                OR User_Id LIKE ? 
-                OR User_Type LIKE ? 
-                OR InDate LIKE ? 
-            `;
-            const searchValue = Array(4).fill(`%${Member_Search}%`); // 모든 검색 조건에 검색어를 포함하는 LIKE 절을 설정합니다.
-            const query = `Select (
-                SELECT CAST(COUNT(Idx) AS UNSIGNED) 
-                FROM NKSSA_Members
-                (${searchCondition})
-            ) AS Total, Idx, User_Id, User_Type, User_Nm, User_Phone, User_Email, InDate, Visited From NKSSA_Members (${searchCondition})`;
-            result = await conn.query(query, [...searchValue]);
-        } else {
-            const query = `Select (
-                SELECT CAST(COUNT(Idx) AS UNSIGNED) 
-                FROM NKSSA_Members
-            ) AS Total, Idx, User_Id, User_Type, User_Nm, User_Phone, User_Email, InDate, Visited From NKSSA_Members`;
-            result = await conn.query(query);
-        }
-
+        const query = `Select 
+            ( SELECT CAST(COUNT(Idx) AS UNSIGNED) FROM NKSSA_Members WHERE CONCAT(User_Nm, User_Id, User_Phone, User_Email, User_Type, InDate) like ?) AS Total
+            , Idx, User_Id, User_Type, User_Nm, User_Phone, User_Email, InDate, Visited FROM 
+            NKSSA_Members WHERE CONCAT(User_Nm, User_Id, User_Phone, User_Email, User_Type, InDate) like ?`;
+        const result = await conn.query(query, [`%${Member_Search}%`, `%${Member_Search}%`]);
         const serializedResult = result.map((row) => ({
             Total: String(row.Total),
             Idx: row.Idx,
@@ -917,8 +898,8 @@ app.post('/Adm/Picture_Delete', verifyBearerToken, async (req, res) => {
 //=============================================================
 
 //=============================================================
-// Calender List Start
-app.post('/Adm/Calender_List', verifyBearerToken, async (req, res) => {
+// Calender Schedule Start
+app.post('/Adm/Calender_Schedule', verifyBearerToken, async (req, res) => {
     let conn;
     try {
         conn = await pool.getConnection();
@@ -927,6 +908,63 @@ app.post('/Adm/Calender_List', verifyBearerToken, async (req, res) => {
         const result = await conn.query(query, []);
         res.json({
             RET_DATA: result,
+            RET_DESC: '조회 완료',
+            RET_CODE: '0000'
+        });
+    } catch (err) {
+        console.error('Error executing MariaDB query:', err);
+        res.json({
+            RET_DATA: null,
+            RET_DESC: `조회 실패_${err}`,
+            RET_CODE: '1000'
+        });
+    } finally {
+        if (conn) conn.release();
+    }
+});
+// Calender Schedule End
+//=============================================================
+
+//=============================================================
+// Calender List Start
+app.post('/Adm/Calender_List', verifyBearerToken, async (req, res) => {
+    const { Calender_Search } = req.body;
+    let conn;
+    try {
+        conn = await pool.getConnection();
+
+        // 검색어가 날짜인지 확인
+        const isDate = !isNaN(Date.parse(Calender_Search));
+
+        let query;
+        let result;
+
+        if (isDate) {
+            query = `Select ( SELECT CAST(COUNT(Idx) AS UNSIGNED) FROM NKSSA_Calender WHERE ? BETWEEN Edu_Date_Start AND Edu_Date_End) AS Total
+            , Idx, Edu_Nm, Edu_Type, Base_Line, Edu_Date_Start, Edu_Date_End, Edu_Personnel, Edu_State, InDate FROM 
+            NKSSA_Calender WHERE ? BETWEEN Edu_Date_Start AND Edu_Date_End`;
+            result = await conn.query(query, [Calender_Search, Calender_Search]);
+        } else {
+            query = `Select ( SELECT CAST(COUNT(Idx) AS UNSIGNED) FROM NKSSA_Calender WHERE CONCAT(Edu_Nm, Edu_Type, Base_Line, Edu_State) like ?) AS Total
+            , Idx, Edu_Nm, Edu_Type, Base_Line, Edu_Date_Start, Edu_Date_End, Edu_Personnel, Edu_State, InDate FROM 
+            NKSSA_Calender WHERE CONCAT(Edu_Nm, Edu_Type, Base_Line, Edu_State) like ?`;
+            result = await conn.query(query, [`%${Calender_Search}%`, `%${Calender_Search}%`]);
+        }
+        const serializedResult = result.map((row) => ({
+            Total: String(row.Total),
+            Idx: row.Idx,
+            Edu_Nm: row.Edu_Nm,
+            Edu_Type: row.Edu_Type,
+            Base_Line: row.Base_Line,
+            Edu_Date_Start: row.Edu_Date_Start,
+            Edu_Date_End: row.Edu_Date_End,
+            Edu_Personnel: row.Edu_Personnel,
+            Edu_State: row.Edu_State,
+            InDate: row.InDate
+        }));
+
+        res.json({
+            RET_DATA: serializedResult,
             RET_DESC: '조회 완료',
             RET_CODE: '0000'
         });

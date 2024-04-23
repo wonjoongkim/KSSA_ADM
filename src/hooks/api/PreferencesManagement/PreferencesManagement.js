@@ -15,10 +15,34 @@ export const preferencesManagement = createApi({
         }
     }),
     endpoints: (builder) => ({
-        // 환경 설정 > 공통코드 관리
-        getCommonList: builder.mutation({
+        // 환경 설정 > 교육일정 리스트
+        CalenderList: builder.mutation({
             query: (body) => ({
-                url: 'adm/common/getCommonList.do',
+                url: 'Adm/Calender_List',
+                method: 'POST',
+                body: body
+            })
+        }),
+        // 환경 설정 > 교육일정 등록
+        CalenderInsert: builder.mutation({
+            query: (body) => ({
+                url: 'Adm/Calender_Insert',
+                method: 'POST',
+                body: body
+            })
+        }),
+        // 환경 설정 > 교육일정 수정
+        CalenderUpdate: builder.mutation({
+            query: (body) => ({
+                url: 'Adm/Calender_Update',
+                method: 'POST',
+                body: body
+            })
+        }),
+        // 환경 설정 > 교육일정 상세정보
+        CalenderView: builder.mutation({
+            query: (body) => ({
+                url: 'Adm/Calender_View',
                 method: 'POST',
                 body: body
             })
@@ -26,4 +50,5 @@ export const preferencesManagement = createApi({
     })
 });
 
-export const { useGetCommonListMutation } = preferencesManagement;
+export const { useCalenderListMutation, useCalenderInsertMutation, useCalenderUpdateMutation, useCalenderViewMutation } =
+    preferencesManagement;

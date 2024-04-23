@@ -3,8 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { FloatButton, Breadcrumb, Table, Row, Space, Col, Spin, Input, Button, Modal, Select } from 'antd';
 import MainCard from 'components/MainCard';
 import { HomeOutlined, ScissorOutlined, EditFilled, DeleteFilled } from '@ant-design/icons';
-
 import { useLocation, Link } from 'react-router-dom';
+import { useCalenderListMutation } from '../../hooks/api/PreferencesManagement/PreferencesManagement';
 
 export const EduSchedule = () => {
     const location = useLocation();
@@ -12,6 +12,50 @@ export const EduSchedule = () => {
     const [loading, setLoading] = useState(false);
     const [viewLoading, setViewLoading] = useState(false);
     const [viewModal, setViewModal] = useState(false);
+    const [calender_ListData, setCalender_ListData] = useState(false);
+    const [calender_Total, setCalender_Total] = useState(false);
+
+    const DataOptions = { year: 'numeric', month: '2-digit', day: '2-digit' };
+
+    //=================================================================
+    // 교육일정 리스트 Start
+    const [CalenderListApi] = useCalenderListMutation();
+    const handleCalenderList = async (search) => {
+        const CalenderListResponse = await CalenderListApi({
+            Calender_Search: search
+        });
+        if (CalenderListResponse?.data?.RET_CODE === '0000') {
+            setCalender_ListData(
+                CalenderListResponse?.data?.RET_DATA.map((d, i) => ({
+                    key: d.Idx,
+                    num: i + 1,
+                    Edu_Nm: d.Edu_Nm,
+                    Edu_Type: d.Edu_Type,
+                    Base_Line: d.Base_Line,
+                    Edu_Date_Start: d.Edu_Date_Start,
+                    Edu_Date_End: d.Edu_Date_End,
+                    Edu_Personnel: d.Edu_Personnel,
+                    Edu_State: d.Edu_State,
+                    date: new Date(d.InDate).toLocaleTimeString('ko-KR', DataOptions).substring(0, 12)
+                }))
+            );
+            setCalender_Total(
+                CalenderListResponse?.data?.RET_DATA[0]?.Total === null || CalenderListResponse?.data?.RET_DATA[0]?.Total === undefined
+                    ? '0'
+                    : CalenderListResponse?.data?.RET_DATA[0]?.Total
+            );
+        } else {
+            setCalender_ListData('');
+        }
+        setLoading(false);
+    };
+    // 교육일정 리스트 End
+    //=================================================================
+
+    // 교육일정 상태 변경 Start
+    const handleCalenderState = async (state) => {};
+
+    // 교육일정 상태 변경 End
 
     // 임시 사용
     const [pages, setPages] = useState('1');
@@ -26,72 +70,113 @@ export const EduSchedule = () => {
         },
         {
             title: '교육명',
-            dataIndex: 'EduNm',
-            render: (text, record) => (
-                <Link
-                    type="text"
-                    onClick={() => {
-                        setViewModal(true);
-                        // setViewLoading(true);
-                    }}
-                >
-                    {text}
-                </Link>
-            )
+            dataIndex: 'Edu_Nm',
+            align: 'center'
+        },
+        {
+            title: '교육타입',
+            dataIndex: 'Edu_Type',
+            render: (_, { Edu_Type }) =>
+                Edu_Type === '1'
+                    ? '검색요원 초기교육'
+                    : Edu_Type === '2'
+                    ? '검색요원 정기교육'
+                    : Edu_Type === '3'
+                    ? '검색요원 인증평가'
+                    : Edu_Type === '4'
+                    ? '항공경비 초기교육'
+                    : Edu_Type === '5'
+                    ? '항공경비 정기교육'
+                    : Edu_Type === '6'
+                    ? '항공경비 인증평가'
+                    : '',
+            align: 'center'
         },
         {
             title: '차수',
-            dataIndex: 'BaseLine',
+            dataIndex: 'Base_Line',
             align: 'center'
         },
         {
             title: '교육일정',
             dataIndex: 'EduDate',
-            align: 'center'
+            align: 'center',
+            render: (_, { Edu_Date_Start, Edu_Date_End }) =>
+                `${new Date(Edu_Date_Start).toLocaleTimeString('ko-KR', DataOptions).substring(0, 12)} ~ ${new Date(Edu_Date_End)
+                    .toLocaleTimeString('ko-KR', DataOptions)
+                    .substring(0, 12)}`
         },
         {
             title: '교육인원',
-            dataIndex: 'People',
+            dataIndex: 'Edu_Personnel',
             align: 'center'
         },
         {
             title: '등록일',
-            dataIndex: 'InDate',
+            dataIndex: 'date',
             align: 'center'
         },
         {
             title: '설정',
-            dataIndex: 'Setting',
-            render: (text, record) => (
+            render: (_, { Edu_State, Edu_Date_Start, key }) => (
                 <Space>
                     <Row gutter={[0, 8]}>
-                        <Col span={24} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
-                            <Button
-                                icon={<ScissorOutlined />}
-                                type="primary"
-                                style={{ backgroundColor: '#5b9bd5', height: '33px', width: '80px' }}
-                            >
-                                마감
-                            </Button>
-                        </Col>
-                        <Col span={24} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
-                            <Button
-                                icon={<ScissorOutlined />}
-                                type="primary"
-                                style={{ backgroundColor: '#909090', height: '33px', width: '80px' }}
-                            >
-                                이수
-                            </Button>
-                        </Col>
+                        {Edu_State === '0' ? (
+                            <Col span={24} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+                                {new Date(Edu_Date_Start).toLocaleTimeString('ko-KR', DataOptions).substring(0, 12) <
+                                new Date().toLocaleTimeString('ko-KR', DataOptions).substring(0, 12) ? (
+                                    <Button
+                                        icon={<ScissorOutlined />}
+                                        type="primary"
+                                        style={{ backgroundColor: '#70AD47', height: '33px', width: '110px' }}
+                                        onClick={() => onCalenderState(0)}
+                                    >
+                                        모집중
+                                    </Button>
+                                ) : (
+                                    <Button
+                                        icon={<ScissorOutlined />}
+                                        type="primary"
+                                        style={{ backgroundColor: '#acacac', height: '33px', width: '110px' }}
+                                        onClick={() => onCalenderState(1)}
+                                    >
+                                        모집완료
+                                    </Button>
+                                )}
+                            </Col>
+                        ) : Edu_State === '1' ? (
+                            <Col span={24} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+                                <Button
+                                    icon={<ScissorOutlined />}
+                                    type="primary"
+                                    style={{ backgroundColor: '#5b9bd5', height: '33px', width: '110px' }}
+                                    onClick={() => onCalenderState(2)}
+                                >
+                                    마감
+                                </Button>
+                            </Col>
+                        ) : Edu_State === '2' ? (
+                            <Col span={24} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+                                <Button
+                                    icon={<ScissorOutlined />}
+                                    type="primary"
+                                    style={{ backgroundColor: '#909090', height: '33px', width: '110px' }}
+                                >
+                                    이수
+                                </Button>
+                            </Col>
+                        ) : (
+                            ''
+                        )}
                         <Col span={24} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
                             <Link
                                 to={{ pathname: '/preferences/Write' }}
-                                state={{ board: '환경설정', flag: 'preferences', title: '교육일정', form: 'Edit' }}
+                                state={{ board: '환경설정', flag: 'preferences', title: '교육일정', form: 'Edit', idx: key }}
                             >
                                 <Button
                                     icon={<ScissorOutlined />}
                                     type="primary"
-                                    style={{ backgroundColor: '#fa541c', height: '33px', width: '80px' }}
+                                    style={{ backgroundColor: '#fa541c', height: '33px', width: '110px' }}
                                 >
                                     수정
                                 </Button>
@@ -104,17 +189,6 @@ export const EduSchedule = () => {
             width: '120px'
         }
     ];
-    const data = [];
-    for (let i = 1; i < 600; i++) {
-        data.push({
-            key: i,
-            EduNm: '항공경비 초기교육',
-            BaseLine: i,
-            EduDate: '2024-03-04 ~ 2024-03-08',
-            People: '35',
-            InDate: '2024-03-04'
-        });
-    }
 
     // 총 개시물
     const showTotal = (total) => `Total ${total} items`;
@@ -135,7 +209,9 @@ export const EduSchedule = () => {
     const hasSelected = selectedRowKeys.length > 0;
 
     // 검색 Search
-    const onSearch = (value, _e, info) => console.log(value);
+    const onSearch = (value, _e, info) => {
+        handleCalenderList(value);
+    };
 
     const onSelect = (value) => {
         console.log(`selected ${value}`);
@@ -144,14 +220,34 @@ export const EduSchedule = () => {
     const onShowSizeChange = (current, pageSize) => {
         setPages(current);
         setPageSize(pageSize);
-        console.log(current, pageSize);
+        // console.log(current, pageSize);
+    };
+
+    const onCalenderState = (flag) => {
+        if (flag === 0) {
+            const confirmDelete = window.confirm('아직 모집기간이 남아있습니다. 그래도 "모집완료"처리를 하실껀가요?');
+            if (confirmDelete) {
+                handleCalenderState(1);
+            } else {
+            }
+        } else if (flag === 1) {
+            const confirmDelete = window.confirm('"마감처리"하시겠습니까?');
+            if (confirmDelete) {
+                handleCalenderState(1);
+            } else {
+            }
+        } else if (flag === 2) {
+            const confirmDelete = window.confirm('"이수처리"하시겠습니까?');
+            if (confirmDelete) {
+                handleCalenderState(2);
+            } else {
+            }
+        }
     };
 
     useEffect(() => {
-        const timerId = setTimeout(() => {
-            setLoading(false);
-        }, 300);
-        return () => clearTimeout(timerId);
+        setLoading(true);
+        handleCalenderList('');
     }, []);
 
     return (
@@ -208,7 +304,7 @@ export const EduSchedule = () => {
                     lg={{ span: 2, offset: 1 }}
                     style={{ fontSize: '14px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
                 >
-                    총 {data.length} 건
+                    총 {calender_Total} 건
                 </Col>
             </Row>
 
@@ -313,7 +409,7 @@ export const EduSchedule = () => {
                             bordered
                             rowSelection={rowSelection}
                             columns={columns}
-                            dataSource={data}
+                            dataSource={calender_ListData}
                             size="large"
                             pagination={{
                                 showQuickJumper: true,
