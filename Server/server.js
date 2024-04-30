@@ -41,7 +41,8 @@ const pool = mariadb.createPool({
 // Helper function for replacer
 const replacer = (key, value) => (typeof value === 'bigint' ? value.toString() : value);
 
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '350mb' }));
+app.use(bodyParser.urlencoded({ limit: '350mb', extended: true }));
 app.use(cors({ origin: '*' }));
 
 //=============================================================

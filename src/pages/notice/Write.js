@@ -72,7 +72,7 @@ export const Write = () => {
             Subject: itemContainer?.Subject,
             Contents: itemContainer?.Contents,
             FileKey: FileKey,
-            InDate: itemContainer?.InDate
+            InDate: itemContainer?.Date
         });
         UploadResponse?.data?.RET_CODE === '0000'
             ? Modal.success({
@@ -113,7 +113,7 @@ export const Write = () => {
             setBlobFilePaht(BoardViewResponse?.data?.RET_DATA?.blobdata);
         } else {
             Modal.error({
-                content: '해당 게시물 오류',
+                content: '게시물 등록 오류',
                 style: { top: 320 },
                 onOk() {}
             });
@@ -312,7 +312,9 @@ export const Write = () => {
         setFormProp(location.state.form);
         setBoardIdx(location.state.Idx);
         setFileKey(uuidv4());
-        handel_BoardView();
+        if (location.state.form === 'View') {
+            handel_BoardView();
+        }
     }, [location.state]);
 
     return (

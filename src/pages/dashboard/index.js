@@ -7,6 +7,7 @@ import { Box, Grid, Typography } from '@mui/material';
 
 // project import
 import CalenderApp_Adm from './CalenderApp_Adm';
+// import CalenderApp_Test from './CalenderApp_Test';
 
 // ==============================|| DASHBOARD - DEFAULT ||============================== //
 
@@ -14,6 +15,7 @@ export const DashboardDefault = () => {
     return (
         <>
             <CalenderApp_Adm />
+            {/* <CalenderApp_Test /> */}
             <Grid container>
                 {/* row 1 */}
 

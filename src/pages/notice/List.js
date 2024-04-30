@@ -336,114 +336,123 @@ export const List = () => {
                 onCancel={handelviewModal_Close}
                 maskClosable={false}
                 centered
-                width={820}
+                width={'auto'}
                 style={{
-                    zIndex: 999
+                    top: '85px',
+                    zIndex: 99999
                 }}
                 footer={null}
             >
                 <Spin tip="Loading..." spinning={viewLoading}>
-                    <Row
-                        style={{
-                            border: '2px solid #cfcfcf',
-                            borderRadius: '12px',
-                            marginTop: '20px',
-                            height: '90px'
-                        }}
-                    >
-                        <Col
-                            span={24}
+                    <div id="contents">
+                        {' '}
+                        {/* Contents를 감싸는 div에 id를 부여하여 실제 너비를 계산합니다. */}
+                        <Row
                             style={{
-                                display: 'flex',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                textAlign: 'center',
-                                fontSize: '21px',
-                                fontWeight: '600'
+                                border: '2px solid #cfcfcf',
+                                borderRadius: '12px',
+                                marginTop: '20px',
+                                height: '90px'
                             }}
                         >
-                            {board_ViewData?.Title}
-                        </Col>
-                        <Col
-                            span={24}
-                            style={{
-                                display: 'flex',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                textAlign: 'center',
-                                fontSize: '15px'
-                            }}
-                        >
-                            {new Date(board_ViewData?.Date).toLocaleTimeString('ko-KR', DataOptions)}
-                        </Col>
-                    </Row>
-                    <Row style={{ padding: '30px 0px' }}>
-                        <Col>
-                            <div dangerouslySetInnerHTML={{ __html: board_ViewData?.Contents }} />
-                        </Col>
-                    </Row>
-                    <Row
-                        gutter={[0, 8]}
-                        style={{
-                            border: '2px solid #cfcfcf',
-                            borderRadius: '12px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            padding: '5px 20px'
-                        }}
-                    >
-                        {fileContainer?.map((d, i) => (
-                            <>
-                                <Col xs={11} lg={14} style={{ display: 'flex', alignItems: 'center', justifyContent: 'start' }}>
-                                    <a href="#">
-                                        <FileDoneOutlined /> {d.Original_FileName}
-                                    </a>
-                                </Col>
-                                <Col xs={13} lg={10} style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-                                    <Space>
-                                        <Tooltip title={<span style={{ fontSize: '13px' }}>다운로드</span>} color={'#f50'} placement="top">
-                                            <Button
-                                                type="default"
-                                                icon={<DownloadOutlined />}
-                                                style={{ height: '30px', width: '45px', backgroundColor: '#efefef', fontSize: '13px' }}
-                                            ></Button>
-                                        </Tooltip>
-                                        <Tooltip
-                                            title={<span style={{ fontSize: '13px' }}>미리보기</span>}
-                                            color={'#108ee9'}
-                                            placement="top"
-                                        >
-                                            <Button
-                                                type="default"
-                                                icon={<EyeOutlined />}
-                                                style={{ height: '30px', width: '45px', backgroundColor: '#efefef', fontSize: '13px' }}
-                                            ></Button>
-                                        </Tooltip>
-                                    </Space>
-                                </Col>
-                            </>
-                        ))}
-                    </Row>
-                    <Row
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            marginTop: '20px'
-                        }}
-                    >
-                        <Col>
-                            <Button
-                                type="primary"
-                                onClick={() => {
-                                    handelviewModal_Close();
+                            <Col
+                                span={24}
+                                style={{
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    textAlign: 'center',
+                                    fontSize: '21px',
+                                    fontWeight: '600'
                                 }}
-                                style={{ width: '120px', height: '45px' }}
                             >
-                                닫기
-                            </Button>
-                        </Col>
-                    </Row>
+                                {board_ViewData?.Title}
+                            </Col>
+                            <Col
+                                span={24}
+                                style={{
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    textAlign: 'center',
+                                    fontSize: '15px'
+                                }}
+                            >
+                                {new Date(board_ViewData?.Date).toLocaleTimeString('ko-KR', DataOptions)}
+                            </Col>
+                        </Row>
+                        <Row style={{ padding: '30px 0px' }}>
+                            <Col>
+                                <div dangerouslySetInnerHTML={{ __html: board_ViewData?.Contents }} />
+                            </Col>
+                        </Row>
+                        <Row
+                            gutter={[0, 8]}
+                            style={{
+                                border: '2px solid #cfcfcf',
+                                borderRadius: '12px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                padding: '5px 20px'
+                            }}
+                        >
+                            {fileContainer?.map((d, i) => (
+                                <>
+                                    <Col xs={11} lg={14} style={{ display: 'flex', alignItems: 'center', justifyContent: 'start' }}>
+                                        <a href="#">
+                                            <FileDoneOutlined /> {d.Original_FileName}
+                                        </a>
+                                    </Col>
+                                    <Col xs={13} lg={10} style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                                        <Space>
+                                            <Tooltip
+                                                title={<span style={{ fontSize: '13px' }}>다운로드</span>}
+                                                color={'#f50'}
+                                                placement="top"
+                                            >
+                                                <Button
+                                                    type="default"
+                                                    icon={<DownloadOutlined />}
+                                                    style={{ height: '30px', width: '45px', backgroundColor: '#efefef', fontSize: '13px' }}
+                                                ></Button>
+                                            </Tooltip>
+                                            <Tooltip
+                                                title={<span style={{ fontSize: '13px' }}>미리보기</span>}
+                                                color={'#108ee9'}
+                                                placement="top"
+                                            >
+                                                <Button
+                                                    type="default"
+                                                    icon={<EyeOutlined />}
+                                                    style={{ height: '30px', width: '45px', backgroundColor: '#efefef', fontSize: '13px' }}
+                                                ></Button>
+                                            </Tooltip>
+                                        </Space>
+                                    </Col>
+                                </>
+                            ))}
+                        </Row>
+                        <Row
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                marginTop: '20px'
+                            }}
+                        >
+                            <Col>
+                                <Button
+                                    type="primary"
+                                    onClick={() => {
+                                        handelviewModal_Close();
+                                    }}
+                                    style={{ width: '120px', height: '45px' }}
+                                >
+                                    Close
+                                </Button>
+                            </Col>
+                        </Row>
+                    </div>
                 </Spin>
             </Modal>
             <FloatButton.BackTop />
