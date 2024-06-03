@@ -386,52 +386,66 @@ export const List = () => {
                                 <div dangerouslySetInnerHTML={{ __html: board_ViewData?.Contents }} />
                             </Col>
                         </Row>
-                        <Row
-                            gutter={[0, 8]}
-                            style={{
-                                border: '2px solid #cfcfcf',
-                                borderRadius: '12px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                padding: '5px 20px'
-                            }}
-                        >
-                            {fileContainer?.map((d, i) => (
-                                <>
-                                    <Col xs={11} lg={14} style={{ display: 'flex', alignItems: 'center', justifyContent: 'start' }}>
-                                        <a href="#">
-                                            <FileDoneOutlined /> {d.Original_FileName}
-                                        </a>
-                                    </Col>
-                                    <Col xs={13} lg={10} style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-                                        <Space>
-                                            <Tooltip
-                                                title={<span style={{ fontSize: '13px' }}>다운로드</span>}
-                                                color={'#f50'}
-                                                placement="top"
-                                            >
-                                                <Button
-                                                    type="default"
-                                                    icon={<DownloadOutlined />}
-                                                    style={{ height: '30px', width: '45px', backgroundColor: '#efefef', fontSize: '13px' }}
-                                                ></Button>
-                                            </Tooltip>
-                                            <Tooltip
-                                                title={<span style={{ fontSize: '13px' }}>미리보기</span>}
-                                                color={'#108ee9'}
-                                                placement="top"
-                                            >
-                                                <Button
-                                                    type="default"
-                                                    icon={<EyeOutlined />}
-                                                    style={{ height: '30px', width: '45px', backgroundColor: '#efefef', fontSize: '13px' }}
-                                                ></Button>
-                                            </Tooltip>
-                                        </Space>
-                                    </Col>
-                                </>
-                            ))}
-                        </Row>
+                        {fileContainer.lenght > 0 ? (
+                            <Row
+                                gutter={[0, 8]}
+                                style={{
+                                    border: '2px solid #cfcfcf',
+                                    borderRadius: '12px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    padding: '5px 20px'
+                                }}
+                            >
+                                {fileContainer?.map((d, i) => (
+                                    <>
+                                        <Col xs={11} lg={14} style={{ display: 'flex', alignItems: 'center', justifyContent: 'start' }}>
+                                            <a href="#">
+                                                <FileDoneOutlined /> {d.Original_FileName}
+                                            </a>
+                                        </Col>
+                                        <Col xs={13} lg={10} style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                                            <Space>
+                                                <Tooltip
+                                                    title={<span style={{ fontSize: '13px' }}>다운로드</span>}
+                                                    color={'#f50'}
+                                                    placement="top"
+                                                >
+                                                    <Button
+                                                        type="default"
+                                                        icon={<DownloadOutlined />}
+                                                        style={{
+                                                            height: '30px',
+                                                            width: '45px',
+                                                            backgroundColor: '#efefef',
+                                                            fontSize: '13px'
+                                                        }}
+                                                    ></Button>
+                                                </Tooltip>
+                                                <Tooltip
+                                                    title={<span style={{ fontSize: '13px' }}>미리보기</span>}
+                                                    color={'#108ee9'}
+                                                    placement="top"
+                                                >
+                                                    <Button
+                                                        type="default"
+                                                        icon={<EyeOutlined />}
+                                                        style={{
+                                                            height: '30px',
+                                                            width: '45px',
+                                                            backgroundColor: '#efefef',
+                                                            fontSize: '13px'
+                                                        }}
+                                                    ></Button>
+                                                </Tooltip>
+                                            </Space>
+                                        </Col>
+                                    </>
+                                ))}
+                            </Row>
+                        ) : (
+                            ''
+                        )}
                         <Row
                             style={{
                                 display: 'flex',

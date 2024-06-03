@@ -312,7 +312,7 @@ export const Write = () => {
         setFormProp(location.state.form);
         setBoardIdx(location.state.Idx);
         setFileKey(uuidv4());
-        if (location.state.form === 'View') {
+        if (location.state.form === 'Edit') {
             handel_BoardView();
         }
     }, [location.state]);
