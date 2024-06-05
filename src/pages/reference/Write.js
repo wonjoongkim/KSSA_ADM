@@ -311,7 +311,9 @@ export const Write = () => {
         setTitleProp(location.state.title);
         setFormProp(location.state.form);
         setFileKey(uuidv4());
-        handel_BoardView();
+        if (location.state.form === 'Edit') {
+            handel_BoardView();
+        }
     }, [location.state]);
 
     return (

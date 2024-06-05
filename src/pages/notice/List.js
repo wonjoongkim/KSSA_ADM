@@ -386,7 +386,7 @@ export const List = () => {
                                 <div dangerouslySetInnerHTML={{ __html: board_ViewData?.Contents }} />
                             </Col>
                         </Row>
-                        {fileContainer.lenght > 0 ? (
+                        {fileContainer?.lenght > 0 ? (
                             <Row
                                 gutter={[0, 8]}
                                 style={{

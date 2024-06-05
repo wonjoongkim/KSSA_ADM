@@ -1080,12 +1080,12 @@ app.post('/Adm/Calender_Insert', verifyBearerToken, async (req, res) => {
 //=============================================================
 // Calender Update Start
 app.post('/Adm/Calender_Update', verifyBearerToken, async (req, res) => {
-    const { Edu_Nm, Edu_Type, Base_Line, Edu_Date_Start, Edu_Date_End, Edu_Personnel, Idx } = req.body;
+    const { Edu_Nm, Edu_Type, Base_Line, Edu_Date_Start, Edu_Date_End, Edu_Personnel, Edu_State, Idx } = req.body;
     let conn;
     try {
         conn = await pool.getConnection();
         const query =
-            'Update NKSSA_Calender Set Edu_Nm = ?, Edu_Type = ?, Base_Line = ?, Edu_Date_Start = ?, Edu_Date_End = ?, Edu_Personnel = ? Where Idx = ?';
+            'Update NKSSA_Calender Set Edu_Nm = ?, Edu_Type = ?, Base_Line = ?, Edu_Date_Start = ?, Edu_Date_End = ?, Edu_Personnel = ?, Edu_State = ? Where Idx = ?';
         const result = await conn.query(query, [
             Edu_Nm,
             Edu_Type,
@@ -1093,6 +1093,7 @@ app.post('/Adm/Calender_Update', verifyBearerToken, async (req, res) => {
             `${Edu_Date_Start} 00:00:00`,
             `${Edu_Date_End} 24:00:00`,
             Edu_Personnel,
+            Edu_State,
             Idx
         ]);
         res.json({
