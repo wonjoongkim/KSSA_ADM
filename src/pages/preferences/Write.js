@@ -56,6 +56,7 @@ export const Write = () => {
         const CalenderUpdateResponse = await CalenderUpdateApi({
             Edu_Nm: itemContainer.Edu_Nm,
             Edu_Type: itemContainer.Edu_Type,
+            Edu_State: itemContainer.Edu_State,
             Base_Line: itemContainer.Base_Line,
             Edu_Date_Start: itemContainer.Edu_Date_Start,
             Edu_Date_End: itemContainer.Edu_Date_End,
