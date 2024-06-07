@@ -314,6 +314,9 @@ export const Write = () => {
         if (location.state.form === 'Edit') {
             handel_BoardView();
         }
+        if (location.state.form === 'Write') {
+            setItemContainer({ ...itemContainer, Date: dayjs(new Date()) });
+        }
     }, [location.state]);
 
     return (
@@ -592,7 +595,7 @@ export const Write = () => {
                             {formProp === 'Write' ? (
                                 <Button
                                     icon={<EditOutlined />}
-                                    onClick={(e) => Writes()}
+                                    onClick={(e) => handel_BoardInsert_Api()}
                                     type="primary"
                                     style={{ height: '45px', width: '160px' }}
                                 >

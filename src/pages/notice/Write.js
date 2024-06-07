@@ -315,6 +315,10 @@ export const Write = () => {
         if (location.state.form === 'Edit') {
             handel_BoardView();
         }
+
+        if (location.state.form === 'Write') {
+            setItemContainer({ ...itemContainer, Date: dayjs(new Date()) });
+        }
     }, [location.state]);
 
     return (

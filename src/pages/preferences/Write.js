@@ -183,7 +183,7 @@ export const Write = () => {
         location.state.idx !== '' ? handleCalenderView(location.state.idx) : '';
     }, [location.state]);
 
-    console.log(itemContainer);
+    // console.log(itemContainer);
     return (
         <>
             <MainCard
