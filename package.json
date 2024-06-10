@@ -2,7 +2,7 @@
     "name": "kssa-administrator-jun",
     "version": "1.1.0",
     "private": true,
-    "homepage": "http://localhost/",
+    "homepage": "http://adm.kssa.re.kr",
     "dependencies": {
         "@ant-design/colors": "^6.0.0",
         "@ant-design/icons": "^4.7.0",
@@ -130,5 +130,6 @@
         "eslint-plugin-react": "^7.31.8",
         "eslint-plugin-react-hooks": "4.6.0",
         "prettier": "2.7.1"
-    }
+    },
+    "proxy": "http://kssaapi.cafe24app.com"
 }

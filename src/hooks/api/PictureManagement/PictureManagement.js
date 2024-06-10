@@ -24,6 +24,22 @@ export const pictureManagement = createApi({
                 body: body
             })
         }),
+        // 사진자료 상세정보
+        PictureView: builder.mutation({
+            query: (body) => ({
+                url: 'Adm/Picture_View',
+                method: 'POST',
+                body: body
+            })
+        }),
+        // 사진자료 등록
+        PictureInsert: builder.mutation({
+            query: (body) => ({
+                url: 'Adm/Picture_Insert',
+                method: 'POST',
+                body: body
+            })
+        }),
         // 사진자료 수정
         PictureUpdate: builder.mutation({
             query: (body) => ({
@@ -43,4 +59,10 @@ export const pictureManagement = createApi({
     })
 });
 
-export const { usePictureListMutation, usePictureUpdateMutation, usePictureDeleteMutation } = pictureManagement;
+export const {
+    usePictureInsertMutation,
+    usePictureViewMutation,
+    usePictureListMutation,
+    usePictureUpdateMutation,
+    usePictureDeleteMutation
+} = pictureManagement;

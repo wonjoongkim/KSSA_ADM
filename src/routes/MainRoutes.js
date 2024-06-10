@@ -29,6 +29,7 @@ import { Write as NWrite } from 'pages/notice/Write';
 import { List as RList } from 'pages/reference/List';
 import { Write as RWrite } from 'pages/reference/Write';
 import { Picture } from 'pages/reference/Picture'; // 사진자료
+import { Picture_Write } from 'pages/reference/Picture_Write'; // 사진자료
 
 // 회원관리
 import { Members } from 'pages/members/Members'; // 회원리스트
@@ -134,6 +135,11 @@ const MainRoutes = {
             // 자료실 > 사진자료
             path: '/reference/Picture',
             element: <Picture />
+        },
+        {
+            // 자료실 > 사진자료 등록
+            path: '/reference/Picture_Write',
+            element: <Picture_Write />
         },
 
         //============================================================

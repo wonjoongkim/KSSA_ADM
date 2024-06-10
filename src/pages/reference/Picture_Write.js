@@ -21,7 +21,11 @@ import {
     useFileDownLoadMutation,
     useFilePreViewMutation
 } from '../../hooks/api/FileManagement/FileManagement';
-import { useBoardInsertMutation, useBoardViewMutation, useBoardUpdateMutation } from '../../hooks/api/BoardManagement/BoardManagement';
+import {
+    usePictureInsertMutation,
+    usePictureViewMutation,
+    usePictureUpdateMutation
+} from '../../hooks/api/PictureManagement/PictureManagement';
 import '@toast-ui/editor/dist/i18n/ko-kr';
 import '@toast-ui/editor/dist/toastui-editor.css';
 import colorSyntax from '@toast-ui/editor-plugin-color-syntax';
@@ -35,7 +39,7 @@ import dayjs from 'dayjs';
 import weekday from 'dayjs/plugin/weekday';
 import localeData from 'dayjs/plugin/localeData';
 
-export const Write = () => {
+export const Picture_Write = () => {
     dayjs.extend(weekday);
     dayjs.extend(localeData);
     const { v4: uuidv4 } = require('uuid'); // UUID 생성을 위한 라이브러리
@@ -63,18 +67,17 @@ export const Write = () => {
     const DataOptions = { year: 'numeric', month: '2-digit', day: '2-digit' };
 
     //=================================================================
-    // Board 등록 Start
-    const [BoardInsertApi] = useBoardInsertMutation();
-    const handel_BoardInsert_Api = async () => {
-        const UploadResponse = await BoardInsertApi({
-            Board_Type: flagProp,
+    // Picture 등록 Start
+    const [PictureInsertApi] = usePictureInsertMutation();
+    const handel_PictureInsert_Api = async () => {
+        const PictureInsertResponse = await PictureInsertApi({
             Subject: itemContainer?.Subject,
             Personnel: itemContainer?.Personnel,
             Contents: itemContainer?.Contents,
             FileKey: FileKey,
-            InDate: itemContainer?.Date
+            InDate: itemContainer?.InDate
         });
-        UploadResponse?.data?.RET_CODE === '0000'
+        PictureInsertResponse?.data?.RET_CODE === '0000'
             ? Modal.success({
                   content: '등록 완료',
                   //   style: { top: 320 }
@@ -94,28 +97,27 @@ export const Write = () => {
 
     //=================================================================
     // Board View Data Start
-    const [BoardViewApi] = useBoardViewMutation();
-    const handel_BoardView = async () => {
-        const BoardViewResponse = await BoardViewApi({
-            Board_Type: location.state.flag,
+    const [PictureViewApi] = usePictureViewMutation();
+    const handel_PictureView_Api = async () => {
+        const PictureViewResponse = await PictureViewApi({
             Idx: location.state.Idx
         });
-        if (BoardViewResponse?.data?.RET_CODE === '0000') {
-            editorRef.current?.getInstance().setMarkdown(BoardViewResponse?.data?.RET_DATA?.result[0].Contents);
-            setFileKey(BoardViewResponse?.data?.RET_DATA?.result[0].File_Key);
+        if (PictureViewResponse?.data?.RET_CODE === '0000') {
+            editorRef.current?.getInstance().setMarkdown(PictureViewResponse?.data?.RET_DATA?.result[0].Contents);
+            setFileKey(PictureViewResponse?.data?.RET_DATA?.result[0].File_Key);
             setItemContainer({
-                State: BoardViewResponse?.data?.RET_DATA?.result[0].State,
-                Subject: BoardViewResponse?.data?.RET_DATA?.result[0].Subject,
-                Date: BoardViewResponse?.data?.RET_DATA?.result[0].InDate,
-                Contents: BoardViewResponse?.data?.RET_DATA?.result[0].Contents,
-                Unit: BoardViewResponse?.data?.RET_DATA?.result[0].Unit,
+                State: PictureViewResponse?.data?.RET_DATA?.result[0].State,
+                Subject: PictureViewResponse?.data?.RET_DATA?.result[0].Subject,
+                Personnel: PictureViewResponse?.data?.RET_DATA?.result[0].Personnel,
+                InDate: PictureViewResponse?.data?.RET_DATA?.result[0].InDate,
+                Contents: PictureViewResponse?.data?.RET_DATA?.result[0].Contents,
                 FileKey: FileKey
             });
-            setFileContainer(BoardViewResponse?.data?.RET_DATA?.file_result);
-            setBlobFilePaht(BoardViewResponse?.data?.RET_DATA?.blobdata);
+            setFileContainer(PictureViewResponse?.data?.RET_DATA?.file_result);
+            setBlobFilePaht(PictureViewResponse?.data?.RET_DATA?.blobdata);
         } else {
             Modal.error({
-                content: '게시물 등록 오류',
+                content: '해당 게시물 오류',
                 style: { top: 320 },
                 onOk() {}
             });
@@ -126,17 +128,17 @@ export const Write = () => {
 
     //=================================================================
     // Board 수정 Start
-    const [BoardUpdateApi] = useBoardUpdateMutation();
-    const handel_BoardUpdate = async () => {
-        const BoardUpdateResponse = await BoardUpdateApi({
+    const [PictureUpdateApi] = usePictureUpdateMutation();
+    const handel_PictureUpdate_Api = async () => {
+        const PictureUpdateResponse = await PictureUpdateApi({
             Subject: itemContainer?.Subject,
-            Unit: itemContainer?.Unit,
+            Personnel: itemContainer?.Personnel,
             Contents: itemContainer?.Contents,
             InDate: itemContainer?.Date,
             State: itemContainer?.State,
             Idx: boardIdx
         });
-        BoardUpdateResponse?.data?.RET_CODE === '0000'
+        PictureUpdateResponse?.data?.RET_CODE === '0000'
             ? Modal.success({
                   content: '수정 완료',
                   onOk() {
@@ -231,7 +233,7 @@ export const Write = () => {
     //=================================================================
     // 파일 업로드 Start
     const handleDrop = (acceptedFiles) => {
-        const remainingSlots = 20 - uploadedFiles?.length;
+        const remainingSlots = 20 - uploadedFiles.length;
         const filesToUpload = acceptedFiles.slice(0, remainingSlots);
         filesToUpload.forEach((file) => {
             // 파일 정보 및 base64 변환
@@ -275,7 +277,7 @@ export const Write = () => {
 
     // 등록일자
     const onChange = (date, dateString) => {
-        setItemContainer({ ...itemContainer, Date: dateString });
+        setItemContainer({ ...itemContainer, InDate: dateString });
     };
 
     // 파일삭제 확인
@@ -291,11 +293,7 @@ export const Write = () => {
 
     // 목록 Start
     const Lists = () => {
-        if (flagProp === 'Picture') {
-            navigate('/reference/Picture', { state: { board: boardProp, flag: flagProp, title: titleProp } });
-        } else {
-            navigate('/reference/List', { state: { board: boardProp, flag: flagProp, title: titleProp } });
-        }
+        navigate('/reference/Picture', { state: { board: boardProp, flag: flagProp, title: titleProp } });
     };
     // 목록 End
 
@@ -349,24 +347,6 @@ export const Write = () => {
             ></MainCard>
             <Spin tip="Loading..." spinning={loading}>
                 <Card title={formProp === 'Write' ? '등록' : '수정'} style={{ marginTop: '30px' }}>
-                    <Row
-                        gutter={[16, 32]}
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            marginTop: '20px'
-                        }}
-                    >
-                        <Col span={24} style={{ fontSize: '15px' }}>
-                            <DatePicker
-                                placeholder="등록일"
-                                onChange={onChange}
-                                style={{ height: '55px', width: '100%' }}
-                                value={itemContainer?.Date ? dayjs(itemContainer?.Date) : dayjs(new Date())}
-                            />
-                        </Col>
-                    </Row>
                     <Row style={{ padding: '30px 0px' }}>
                         <Col span={24} style={{ fontSize: '15px' }}>
                             <Switch
@@ -400,6 +380,28 @@ export const Write = () => {
                             marginTop: '20px'
                         }}
                     >
+                        <Col span={24} style={{ fontSize: '15px' }}>
+                            {formProp === 'Write' ? (
+                                <DatePicker
+                                    placeholder="등록일"
+                                    onChange={onChange}
+                                    style={{ height: '55px', width: '100%' }}
+                                    value={itemContainer?.InDate ? dayjs(itemContainer?.InDate) : dayjs(new Date())}
+                                />
+                            ) : (
+                                `등록일 : ${new Date(itemContainer?.Date).toLocaleTimeString('ko-KR', DataOptions).substring(0, 12)}`
+                            )}
+                        </Col>
+                    </Row>
+                    <Row
+                        gutter={[16, 32]}
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            marginTop: '20px'
+                        }}
+                    >
                         <Col span={24} style={{ fontSize: '18px', fontWeight: '600' }}>
                             <Input
                                 size="large"
@@ -418,10 +420,10 @@ export const Write = () => {
                                     placeholder="이수인원"
                                     prefix={<EditOutlined />}
                                     allowClear
-                                    value={itemContainer?.Unit}
+                                    value={itemContainer?.Personnel}
                                     enterButton="Search"
                                     style={{ height: '55px' }}
-                                    onChange={(e) => setItemContainer({ ...itemContainer, Unit: e.target.value })}
+                                    onChange={(e) => setItemContainer({ ...itemContainer, Personnel: e.target.value })}
                                 />
                             </Col>
                         ) : (
@@ -436,7 +438,7 @@ export const Write = () => {
                                 initialEditType="wysiwyg"
                                 hideModeSwitch={false}
                                 width="100%"
-                                height={flagProp === 'Picture' ? '150px' : '450px'}
+                                height={flagProp === 'Picture' ? '250px' : '450px'}
                                 usageStatistics={false}
                                 useCommandShortcut={true}
                                 name="Contents"
@@ -617,7 +619,7 @@ export const Write = () => {
                             {formProp === 'Write' ? (
                                 <Button
                                     icon={<EditOutlined />}
-                                    onClick={(e) => handel_BoardInsert_Api()}
+                                    onClick={(e) => handel_PictureInsert_Api()}
                                     type="primary"
                                     style={{ height: '45px', width: '160px' }}
                                 >
@@ -626,7 +628,7 @@ export const Write = () => {
                             ) : (
                                 <Button
                                     icon={<EditOutlined />}
-                                    onClick={(e) => handel_BoardUpdate()}
+                                    onClick={(e) => handel_PictureView_Api()}
                                     type="primary"
                                     style={{ height: '45px', width: '160px' }}
                                 >

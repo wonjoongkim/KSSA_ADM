@@ -281,7 +281,13 @@ export const Picture = () => {
                                             >
                                                 <Link
                                                     to={{ pathname: '/reference/Write' }}
-                                                    state={{ board: '자료실', flag: 'Picture', title: '사진자료', form: 'Edit' }}
+                                                    state={{
+                                                        board: '자료실',
+                                                        flag: 'Picture',
+                                                        title: '사진자료',
+                                                        form: 'Edit',
+                                                        Idx: d.key
+                                                    }}
                                                 >
                                                     <Button
                                                         icon={<ScissorOutlined />}
